@@ -1,3 +1,9 @@
+# OSX
+.DS_Store
+
+# emacs
+*~
+
 # pycharm
 .idea/
 
