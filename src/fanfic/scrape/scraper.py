@@ -52,6 +52,7 @@ def scrape_story_blurb(story):
     # names of the classes on fanfiction.net
     title_class = 'stitle'
     metadata_div_class = 'z-padtop2 xgray'
+    backup_metadata_div_class = 'z-indent z-padtop'
 
     title = story.find(class_=title_class).get_text()
     story_id = story.find(class_=title_class)['href'].split("/")[2]
@@ -66,6 +67,14 @@ def scrape_story_blurb(story):
 
     metadata_div = story.find('div', class_=metadata_div_class)
 
+    # this happened once, on story ID 268931
+    if metadata_div is None:
+        metadata_div = story.find('div', class_=backup_metadata_div_class)
+        start_idx = metadata_div.text.index('Rated')
+        metadata_div_text = metadata_div.text[start_idx:]
+    else:
+        metadata_div_text = metadata_div.get_text()
+
     times = metadata_div.find_all(attrs={'data-xutime': True})
     if len(times) == 2:
         updated = times[0]['data-xutime']
@@ -74,7 +83,7 @@ def scrape_story_blurb(story):
         updated = times[0]['data-xutime']
         published = updated
 
-    metadata_parts = metadata_div.get_text().split('-')
+    metadata_parts = metadata_div_text.split('-')
     genres = get_genres(metadata_parts[2].strip())
 
     language = metadata_parts[1].strip()
@@ -145,8 +154,9 @@ def main():
     rate_limit = 2
 
     metadata_list = {}
+    first_page = 1
     last_page = 23521
-    pages = range(last_page, 0, -1)
+    pages = range(last_page, first_page - 1, -1)
     for page in pages:
         # log
         print("Scraping page {0}".format(page))
