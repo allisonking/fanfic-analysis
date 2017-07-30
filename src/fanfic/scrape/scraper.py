@@ -2,6 +2,8 @@ import requests, json, time, re
 from bs4 import BeautifulSoup
 
 
+# this is almost exactly the same as the fanfic library (see README) but with a check for
+# if the right metadata portion is passed in
 def get_genres(genre_text):
     if genre_text.startswith('Chapters'):
         return []
@@ -18,26 +20,12 @@ def get_genres(genre_text):
     return corrected_genres
 
 
-#def is_last_page(soup):
-#    pattern = re.compile(r'Last')
-#    pattern2 = re.compile(r'Next')
-#    last_findings = soup.find('a', text=pattern)
-#    next_findings = soup.find('a', text=pattern2)
-#    if last_findings is None and next_findings is None:
-#        return True
-#    else:
-#        return False
-
-
 def scrape_all_stories_on_page(url, metadata_list):
     # names of the classes on fanfiction.net
     story_root_class = 'z-list zhover zpointer '
 
     html = requests.get(url).content
     soup = BeautifulSoup(html, "html.parser")
-
-    # get last page
-    #last_page = is_last_page(soup)
 
     # get all the stories on the page
     all_stories_on_page = soup.find_all('div', class_=story_root_class)
@@ -75,6 +63,7 @@ def scrape_story_blurb(story):
     else:
         metadata_div_text = metadata_div.get_text()
 
+    # get publish/update times
     times = metadata_div.find_all(attrs={'data-xutime': True})
     if len(times) == 2:
         updated = times[0]['data-xutime']
@@ -83,6 +72,7 @@ def scrape_story_blurb(story):
         updated = times[0]['data-xutime']
         published = updated
 
+    # get the rest of the metadata
     metadata_parts = metadata_div_text.split('-')
     genres = get_genres(metadata_parts[2].strip())
 
@@ -97,6 +87,7 @@ def scrape_story_blurb(story):
         'genres': genres
     }
 
+    # thanks a lot to the fanfic library!
     for parts in metadata_parts:
         parts = parts.strip()
         # already dealt with language and genres- everything else should have name: value
@@ -121,7 +112,10 @@ def scrape_story_blurb(story):
         metadata['characters'] = get_characters_from_string(metadata_parts[len(metadata_parts) - 2])
     else:
         metadata['status'] = 'Incomplete'
-        metadata['characters'] = get_characters_from_string(last_part)
+        if last_part.startswith('Published'):
+            metadata['characters'] = []
+        else:
+            metadata['characters'] = get_characters_from_string(last_part)
 
     return story_id, metadata
 
