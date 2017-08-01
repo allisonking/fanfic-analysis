@@ -8,8 +8,7 @@
 .idea/
 
 # ignore scraped data
-*.json
-*.csv
+data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
