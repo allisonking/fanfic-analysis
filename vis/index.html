@@ -17,6 +17,11 @@
     fill: white;
     fill-opacity: .5;
   }
+
+  .timeline-label {
+    font-size: 14px;
+  }
+
   </style>
 
 </head>
@@ -26,8 +31,8 @@
 <script type="text/javascript">
 
 // set dimensions for the svg
-var margin = {top: 50, right: 50, bottom: 100, left: 100};
-var w = 960 - margin.left - margin.right;
+var margin = {top: 50, right: 100, bottom: 100, left: 200};
+var w = 1200 - margin.left - margin.right;
 var h = 600 - margin.top - margin.bottom;
 
 // functions to parse/format the date
@@ -46,10 +51,29 @@ var svg = d3.select("body").append("svg")
           .append('g')
             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
+// lightning bolt polygon
+var scar = [{"x":0, "y":0},
+            {"x":8,"y":0},
+            {"x":-6,"y":11},
+            {"x":2,"y":1},
+            {"x":-6, "y":1},
+            {"x":3,"y":-7}, ];
+// transform it for easy access later
+var newScar = scar.map(function(d) {
+  return [d.x, d.y];
+});
 
 // set the ranges for the scales
 var xScale = d3.scaleTime().range([0, w]);
 var yScale = d3.scaleLinear().range([h, 0]);
+
+// read in the timeline data and store as a dictionary for easy access
+d3.csv("data/timeline.csv", function(timeline_data) {
+  timeline_dict = {};
+  timeline_data.forEach(function(d) {
+    timeline_dict[parseTime(d.date)] = d.event;
+  })
+});
 
 // read in the data
 d3.csv("data/grouped_dates.csv", function(data) {
@@ -69,51 +93,124 @@ d3.csv("data/grouped_dates.csv", function(data) {
      .data(data)
      .enter()
      .append('circle')
+     // filter out the special event dates- will be scars later
+     .filter(function(d) { return !timeline_dict[d.published_date] })
      .attr('cx', function(d) { return xScale(d.published_date) })
      .attr('cy', function(d) { return yScale(d.count) })
      .attr('r', 2)
      .attr('fill', baseColor)
-     .on('mouseover', handleMouseOver)
-     .on('mouseout', handleMouseOut);
+     .on('mouseover', handleCircleMouseOver)
+     .on('mouseout', handleCircleMouseOut);
 
-  // add the x axis
-  svg.append('g')
-     .attr('class', 'axis')
-     .attr('transform', 'translate(0,' + h + ')')
-     .call(d3.axisBottom(xScale)
+  // draw the timeline events as scars
+  svg.selectAll('polygon')
+       .data(data)
+       .enter()
+       .append('polygon')
+       // filter for only events
+       .filter(function(d) { return timeline_dict[d.published_date]; })
+       .attr('points', function(d) {
+         return [newScar].join(" ");
+       })
+       // draw the scar and transform to where the point should be
+       .attr('transform', function(d) {
+         var x = xScale(d.published_date);
+         var y = yScale(d.count);
+         return 'translate(' + x +',' + y +')';
+       })
+       .attr('stroke', otherColor)
+       .attr('fill', otherColor)
+       .attr('stroke-width', 2)
+       .on('mouseover', handleScarMouseOver)
+       .on('mouseout', handleScarMouseOut);
+
+    // add the x axis
+    svg.append('g')
+       .attr('class', 'axis')
+       .attr('transform', 'translate(0,' + h + ')')
+       .call(d3.axisBottom(xScale)
              .ticks(15)
              .tickFormat(d3.timeFormat("%Y")))
-     .selectAll('text') // formatting for x axis labels to be slanted
+       .selectAll('text') // formatting for x axis labels to be slanted
          .style('text-anchor', 'end')
          .attr('dx', '-.8em')
          .attr('dy', '.15em')
          .attr('transform', 'rotate(-65)');
 
-  // add the y axis
-  svg.append('g')
-     .attr('class', 'axis')
-     .call(d3.axisLeft(yScale));
+    // add the y axis
+    svg.append('g')
+       .attr('class', 'axis')
+       .call(d3.axisLeft(yScale));
 
-  // now for some titles/labels
-  svg.append('text')
-     .attr('text-anchor', 'middle')
-     .attr('transform', 'translate(' + -margin.left/2 +',' + (h/2) +')rotate(-90)')
-     .text('Number of Fan Fictions Published');
+    // now for some titles/labels
+    svg.append('text')
+       .attr('text-anchor', 'middle')
+       .attr('transform', 'translate(' + -margin.left/2 +',' + (h/2) +')rotate(-90)')
+       .text('Number of Fan Fictions Published');
 
-  svg.append('text')
-     .attr('text-anchor', 'middle')
-     .attr('transform', 'translate(' + (w/2) + ',' + (h + margin.bottom * 3/4) +')')
-     .text('Date');
+    svg.append('text')
+       .attr('text-anchor', 'middle')
+       .attr('transform', 'translate(' + (w/2) + ',' + (h + margin.bottom * 3/4) +')')
+       .text('Date');
 
-  svg.append('text')
-     .attr('text-anchor', 'middle')
-     .attr('transform', 'translate(' + (w/2) + ',' + -margin.top/2 + ')')
-     .text('Harry Potter Fan Fiction Publications Over Time');
+    svg.append('text')
+       .attr('text-anchor', 'middle')
+       .attr('transform', 'translate(' + (w/2) + ',' + -margin.top/2 + ')')
+       .text('Harry Potter Fan Fiction Publications Over Time');
+
 });
+
+ // function to handle when someone mouses over an event
+ function handleScarMouseOver(d, i) {
+   d3.select(this)
+     .attr('transform', function(d) {
+       var x = xScale(d.published_date);
+       var y = yScale(d.count);
+       return 'translate(' + x +',' + y +') scale(1.5)';
+     })
+
+     // assign the text labeling a group and ID so we can delete it later
+     group = svg.append('g')
+                .attr('id', 'id-'+dateToString(d.published_date));
+
+     var text = group.append('text')
+                   .attr("x", xScale(d.published_date) - 20 )
+                   .attr("y", yScale(d.count) - 5)
+                   .attr('text-anchor', 'middle')
+                   .attr('class', 'timeline-label')
+                   .text(dateToLabel(d.published_date) + ": "
+                     + timeline_dict[d.published_date]);
+
+     // get the bbox so we can place a background
+     var bbox = text.node().getBBox();
+     var bboxPadding = 5;
+
+     // place the background
+     var rect = group.insert('rect', ':first-child')
+                   .attr('x', bbox.x - bboxPadding/2)
+                   .attr('y', bbox.y - bboxPadding/2)
+                   .attr('width', bbox.width + bboxPadding)
+                   .attr('height', bbox.height + bboxPadding)
+                   .attr('rx', 10)
+                   .attr('ry', 10)
+                   .attr('class', 'label-background');
+ }
+
+ // function to handle when someone mouses out of an event
+ function handleScarMouseOut(d, i) {
+   d3.select(this)
+     .attr('transform', function(d) {
+       var x = xScale(d.published_date);
+       var y = yScale(d.count);
+       return 'translate(' + x +',' + y +')';
+     })
+   d3.select('#id-'+dateToString(d.published_date)).remove();
+
+ }
 
  // function to handle when user hovers over a point
  // changes color + size of circle and displays the date/number published
- function handleMouseOver(d, i) {
+ function handleCircleMouseOver(d, i) {
    d3.select(this)
      .attr('fill', otherColor)
      .attr('r', 10);
@@ -126,7 +223,6 @@ d3.csv("data/grouped_dates.csv", function(data) {
                  .attr("x", xScale(d.published_date) - 20 )
                  .attr("y", yScale(d.count) - 5)
                  .attr('text-anchor', 'middle')
-                 .attr('class', 'shadow')
                  .text(dateToLabel(d.published_date) + ": " + d.count);
 
    // get the bbox so we can place a background
@@ -146,14 +242,13 @@ d3.csv("data/grouped_dates.csv", function(data) {
 
  // function to handle when user leaves a point
  // reverts back to original size + color; deletes text label group
- function handleMouseOut(d, i) {
+ function handleCircleMouseOut(d, i) {
    d3.select(this)
      .attr('fill', baseColor)
      .attr('r', 2);
-
    d3.select('#id-'+dateToString(d.published_date)).remove();
  }
-
+ 
  </script>
 </body>
 </html>
