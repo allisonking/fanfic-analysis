@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>After All This Time?</title>
+  <!-- Import D3 -->
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+
+  <!-- some css -->
+  <style>
+  .axis {
+    font-family: Helvetica, sans-serif;
+    font: 14px;
+  }
+
+  .label-background {
+    fill: white;
+    fill-opacity: .5;
+  }
+  </style>
+
+</head>
+<body>
+
+<!-- And now for some D3! -->
+<script type="text/javascript">
+
+// set dimensions for the svg
+var margin = {top: 50, right: 50, bottom: 100, left: 100};
+var w = 960 - margin.left - margin.right;
+var h = 600 - margin.top - margin.bottom;
+
+// functions to parse/format the date
+var parseTime = d3.timeParse("%Y-%m-%d");
+var dateToString = d3.timeFormat("%Y-%m-%d");
+var dateToLabel = d3.timeFormat("%m/%d/%y")
+
+// colors
+var baseColor = 'red';
+var otherColor = 'orange';
+
+// create the svg
+var svg = d3.select("body").append("svg")
+            .attr('height', h + margin.top + margin.bottom)
+            .attr('width', w + margin.left + margin.right)
+          .append('g')
+            .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+
+// set the ranges for the scales
+var xScale = d3.scaleTime().range([0, w]);
+var yScale = d3.scaleLinear().range([h, 0]);
+
+// read in the data
+d3.csv("data/grouped_dates.csv", function(data) {
+
+  // format the data from strings to their actual types
+  data.forEach(function(d) {
+    d.published_date = parseTime(d.published_date);
+    d.count = +d.count;
+  });
+
+  // set the domain for the scale
+  xScale.domain(d3.extent(data, function(d) { return d.published_date; }));
+  yScale.domain([0, d3.max(data, function(d) {return d.count; })])
+
+  // and now to draw the circles for the scatterplot
+  svg.selectAll('circle')
+     .data(data)
+     .enter()
+     .append('circle')
+     .attr('cx', function(d) { return xScale(d.published_date) })
+     .attr('cy', function(d) { return yScale(d.count) })
+     .attr('r', 2)
+     .attr('fill', baseColor)
+     .on('mouseover', handleMouseOver)
+     .on('mouseout', handleMouseOut);
+
+  // add the x axis
+  svg.append('g')
+     .attr('class', 'axis')
+     .attr('transform', 'translate(0,' + h + ')')
+     .call(d3.axisBottom(xScale)
+             .ticks(15)
+             .tickFormat(d3.timeFormat("%Y")))
+     .selectAll('text') // formatting for x axis labels to be slanted
+         .style('text-anchor', 'end')
+         .attr('dx', '-.8em')
+         .attr('dy', '.15em')
+         .attr('transform', 'rotate(-65)');
+
+  // add the y axis
+  svg.append('g')
+     .attr('class', 'axis')
+     .call(d3.axisLeft(yScale));
+
+  // now for some titles/labels
+  svg.append('text')
+     .attr('text-anchor', 'middle')
+     .attr('transform', 'translate(' + -margin.left/2 +',' + (h/2) +')rotate(-90)')
+     .text('Number of Fan Fictions Published');
+
+  svg.append('text')
+     .attr('text-anchor', 'middle')
+     .attr('transform', 'translate(' + (w/2) + ',' + (h + margin.bottom * 3/4) +')')
+     .text('Date');
+
+  svg.append('text')
+     .attr('text-anchor', 'middle')
+     .attr('transform', 'translate(' + (w/2) + ',' + -margin.top/2 + ')')
+     .text('Harry Potter Fan Fiction Publications Over Time');
+});
+
+ // function to handle when user hovers over a point
+ // changes color + size of circle and displays the date/number published
+ function handleMouseOver(d, i) {
+   d3.select(this)
+     .attr('fill', otherColor)
+     .attr('r', 10);
+
+   // assign the text labeling a group and ID so we can delete it later
+   group = svg.append('g')
+              .attr('id', 'id-'+dateToString(d.published_date));
+
+   var text = group.append('text')
+                 .attr("x", xScale(d.published_date) - 20 )
+                 .attr("y", yScale(d.count) - 5)
+                 .attr('text-anchor', 'middle')
+                 .attr('class', 'shadow')
+                 .text(dateToLabel(d.published_date) + ": " + d.count);
+
+   // get the bbox so we can place a background
+   var bbox = text.node().getBBox();
+   var bboxPadding = 5;
+
+   // place the background
+   var rect = group.insert('rect', ':first-child')
+                 .attr('x', bbox.x - bboxPadding/2)
+                 .attr('y', bbox.y - bboxPadding/2)
+                 .attr('width', bbox.width + bboxPadding)
+                 .attr('height', bbox.height + bboxPadding)
+                 .attr('rx', 10)
+                 .attr('ry', 10)
+                 .attr('class', 'label-background');
+ }
+
+ // function to handle when user leaves a point
+ // reverts back to original size + color; deletes text label group
+ function handleMouseOut(d, i) {
+   d3.select(this)
+     .attr('fill', baseColor)
+     .attr('r', 2);
+
+   d3.select('#id-'+dateToString(d.published_date)).remove();
+ }
+
+ </script>
+</body>
+</html>
