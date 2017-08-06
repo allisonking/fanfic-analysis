@@ -1,0 +1,44 @@
+body {
+  font-family: Helvetica, sans-serif;
+  font-size: 14px;
+}
+
+.axis {
+  font-family: Helvetica, sans-serif;
+  font-size: 14px;
+}
+
+.axis text{
+  fill: black;
+}
+
+svg text{
+  font-family: Helvetica, sans-serif;
+  font-size: 14px;
+}
+
+.label-background {
+  fill: white;
+  fill-opacity: .5;
+}
+
+.house-input {
+  position: absolute;
+  margin-left: 15px;
+}
+
+.view {
+  opacity: 0.2;
+  fill: white;
+}
+
+.zoom {
+  cursor: move;
+  fill: none;
+  pointer-events: all;
+
+}
+
+.point {
+  clip-path: url(#clip);
+}
