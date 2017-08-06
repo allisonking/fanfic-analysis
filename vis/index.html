@@ -5,12 +5,28 @@
   <title>After All This Time?</title>
   <!-- Import D3 -->
   <script src="https://d3js.org/d3.v4.min.js"></script>
+  <!--<script src="js/d3.min.js"></script>-->
 
   <!-- some css -->
   <style>
+
+  body {
+    font-family: Helvetica, sans-serif;
+    font-size: 14px;
+  }
+
   .axis {
     font-family: Helvetica, sans-serif;
-    font: 14px;
+    font-size: 14px;
+  }
+
+  .axis text{
+    fill: black;
+  }
+
+  svg text{
+    font-family: Helvetica, sans-serif;
+    font-size: 14px;
   }
 
   .label-background {
@@ -18,14 +34,28 @@
     fill-opacity: .5;
   }
 
-  .timeline-label {
-    font-size: 14px;
+  .house-input {
+    position: absolute;
+    margin-left: 15px;
+  }
+
+  .view {
+    opacity: 0.2;
+    fill: white;
   }
 
   </style>
 
 </head>
 <body>
+  Why not show your house pride? <br>
+  <form class="house-input">
+
+    <input type="radio" name="houses" value="Gryffindor" checked>Gryffindor<br>
+    <input type="radio" name="houses" value="Hufflepuff">Hufflepuff <br>
+    <input type="radio" name="houses" value="Ravenclaw">Ravenclaw <br>
+    <input type="radio" name="houses" value="Slytherin">Slytherin
+  </form>
 
 <!-- And now for some D3! -->
 <script type="text/javascript">
@@ -42,7 +72,7 @@ var dateToLabel = d3.timeFormat("%m/%d/%y")
 
 // colors
 var baseColor = 'red';
-var otherColor = 'orange';
+var otherColor = '#ffd700'; // gold
 
 // create the svg
 var svg = d3.select("body").append("svg")
@@ -50,6 +80,14 @@ var svg = d3.select("body").append("svg")
             .attr('width', w + margin.left + margin.right)
           .append('g')
             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+// this is used for zoom functionality- currently not working
+/*var view = svg.append('rect')
+              .attr('class', 'view')
+              .attr('x', 0.5)
+              .attr('y', 0.5)
+              .attr('width', w - 1)
+              .attr('height', h - 1);*/
 
 // lightning bolt polygon
 var scar = [{"x":0, "y":0},
@@ -89,7 +127,7 @@ d3.csv("data/grouped_dates.csv", function(data) {
   yScale.domain([0, d3.max(data, function(d) {return d.count; })])
 
   // and now to draw the circles for the scatterplot
-  svg.selectAll('circle')
+  var circles = svg.selectAll('circle')
      .data(data)
      .enter()
      .append('circle')
@@ -103,7 +141,7 @@ d3.csv("data/grouped_dates.csv", function(data) {
      .on('mouseout', handleCircleMouseOut);
 
   // draw the timeline events as scars
-  svg.selectAll('polygon')
+  var scars = svg.selectAll('polygon')
        .data(data)
        .enter()
        .append('polygon')
@@ -125,39 +163,107 @@ d3.csv("data/grouped_dates.csv", function(data) {
        .on('mouseout', handleScarMouseOut);
 
     // add the x axis
-    svg.append('g')
-       .attr('class', 'axis')
-       .attr('transform', 'translate(0,' + h + ')')
-       .call(d3.axisBottom(xScale)
-             .ticks(15)
-             .tickFormat(d3.timeFormat("%Y")))
-       .selectAll('text') // formatting for x axis labels to be slanted
-         .style('text-anchor', 'end')
-         .attr('dx', '-.8em')
-         .attr('dy', '.15em')
-         .attr('transform', 'rotate(-65)');
+    var xAxis = d3.axisBottom(xScale)
+                  .ticks(15)
+                  .tickFormat(d3.timeFormat("%Y"))
 
-    // add the y axis
-    svg.append('g')
-       .attr('class', 'axis')
-       .call(d3.axisLeft(yScale));
+    var gX = svg.append('g')
+                .attr('class', 'axis')
+                .attr('transform', 'translate(0,' + h + ')')
+                .call(xAxis)
+                .selectAll('text') // formatting for x axis labels to be slanted
+                  .style('text-anchor', 'end')
+                  .attr('dx', '-.8em')
+                  .attr('dy', '.15em')
+                  .attr('transform', 'rotate(-65)');
+
+    // add the y
+    var yAxis = d3.axisLeft(yScale);
+    var gY = svg.append('g')
+                .attr('class', 'axis')
+                .call(yAxis);
 
     // now for some titles/labels
     svg.append('text')
        .attr('text-anchor', 'middle')
        .attr('transform', 'translate(' + -margin.left/2 +',' + (h/2) +')rotate(-90)')
        .text('Number of Fan Fictions Published');
-
     svg.append('text')
        .attr('text-anchor', 'middle')
        .attr('transform', 'translate(' + (w/2) + ',' + (h + margin.bottom * 3/4) +')')
        .text('Date');
-
     svg.append('text')
        .attr('text-anchor', 'middle')
        .attr('transform', 'translate(' + (w/2) + ',' + -margin.top/2 + ')')
        .text('Harry Potter Fan Fiction Publications Over Time');
 
+    d3.selectAll("input[name='houses']").on("change", function(){
+      switch(this.value) {
+        case 'Gryffindor':
+          baseColor = 'red';
+          otherColor = '#ffd700';
+          break;
+        case 'Hufflepuff':
+          baseColor = 'yellow';
+          otherColor = 'black';
+          break;
+        case 'Slytherin':
+          baseColor = '#c0c0c0';
+          otherColor = 'green';
+          break;
+        case 'Ravenclaw':
+          baseColor = 'blue';
+          otherColor = '#cd7f32'; //bronze
+          break;
+        default:
+          baseColor = 'red';
+          otherColor = '#ffd700';
+      }
+      circles.transition()
+             .delay(function(d, i) {
+               return i * .25;
+             })
+             .duration(100)
+             .attr('fill', baseColor);
+
+      scars.transition()
+           .delay(function(d, i) {
+             return i * 50;
+           })
+           .attr('stroke', otherColor)
+           .attr('fill', otherColor);
+    });
+
+    // try zooming. need to update data with the axes. x axis is acting funny
+    /*var zoom = d3.zoom()
+                 .scaleExtent([1,40])
+                 .translateExtent([[-100, -100], [w + 90, h + 100]])
+                 .on("zoom", zoomed);
+
+    svg.call(zoom);
+
+    function zoomed() {
+      svg.attr('transform', d3.event.transform);
+      newXScale = xAxis.scale(d3.event.transform.rescaleX(xScale));
+      gX.call(newXScale)
+        .selectAll('text') // formatting for x axis labels to be slanted
+        .style('text-anchor', 'end')
+        .attr('dx', '-.8em')
+        .attr('dy', '.15em')
+        .attr('transform', 'rotate(-65)');
+
+      newYScale = yAxis.scale(d3.event.transform.rescaleY(yScale));
+      gY.call(newYScale);
+      update();
+    }
+
+    function update() {
+      var circle = svg.selectAll('circle')
+                      .data(function(d) {
+                        return d;
+                      });
+      //circle.enter()
+    } */
 });
 
  // function to handle when someone mouses over an event
@@ -180,6 +286,14 @@ d3.csv("data/grouped_dates.csv", function(data) {
                    .attr('class', 'timeline-label')
                    .text(dateToLabel(d.published_date) + ": "
                      + timeline_dict[d.published_date]);
+
+    group.append('line')
+         .attr('x1', xScale(d.published_date))
+         .attr('x2', xScale(d.published_date))
+         .attr('y1', yScale(0))
+         .attr('y2', 0)
+         .style('stroke-width', 1)
+         .style('stroke', 'black');
 
      // get the bbox so we can place a background
      var bbox = text.node().getBBox();
@@ -248,7 +362,7 @@ d3.csv("data/grouped_dates.csv", function(data) {
      .attr('r', 2);
    d3.select('#id-'+dateToString(d.published_date)).remove();
  }
- 
+
  </script>
 </body>
 </html>
