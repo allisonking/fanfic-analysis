@@ -109,7 +109,7 @@ function update() {
        .merge(scars)
        .attr('transform', function(d) {
          var x = xScale(parseTime(d.date));
-         var y = init_yScale(3*h/4);
+         var y = h/6;
          return 'translate(' + x + ',' + y + ')';
        })
 }
@@ -141,7 +141,7 @@ d3.csv("data/timeline.csv", function(data) {
 });
 
 // read in the data
-d3.csv("data/data.csv", function(data) {
+d3.csv("data/dev-data.csv", function(data) {
   csv_data = data;
 
   var dates = d3.nest()
@@ -194,7 +194,7 @@ d3.csv("data/data.csv", function(data) {
        // draw the scar and transform to where the point should be
        .attr('transform', function(d) {
          var x = xScale(parseTime(d.date));
-         var y = yScale(3*h/4);
+         var y = h/6;
          return 'translate(' + x +',' + y +')';
        })
        .append('polygon')
@@ -286,7 +286,7 @@ d3.csv("data/data.csv", function(data) {
    var text = group.append('text')
                    .attr("x", xScale(date)- 20 )
                    //.attr("y", yScale(d.count)- 5)
-                   .attr('y', yScale(3*h/4) - 20)
+                   .attr('y', h/6+30)
                    .attr('text-anchor', 'middle')
                    .attr('class', 'timeline-label')
                    .text(dateToLabel(date) + ": "
