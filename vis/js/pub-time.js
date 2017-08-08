@@ -44,26 +44,63 @@ var focus = svg.append('g')
 
 var csv_data;
 
+d3.select('#xLocked').on('change', xLockeded);
+d3.select('#yLocked').on('change', yLockeded);
+var xLocked = false;
+var yLocked = false;
+function xLockeded(){
+  if (d3.select('#xLocked').property('checked')) {
+    xLocked = true;
+  } else { xLocked = false;}
+}
+function yLockeded() {
+  if (d3.select('#yLocked').property('checked')) {
+    yLocked = true;
+  } else { yLocked = false;}
+}
+
 function zoomed() {
   var t = d3.event.transform;
-  var new_xScale = t.rescaleX(init_xScale);
-  var new_yScale = t.rescaleY(init_yScale);
-  xScale.domain(new_xScale.domain())
-  yScale.domain(new_yScale.domain());
-  focus.select('.axis--x').call(xAxis.scale(new_xScale))
-                          .selectAll('text') // formatting for x axis labels to be slanted
-                          .style('text-anchor', 'end')
-                          .attr('dx', '-.8em')
-                          .attr('dy', '.15em')
-                          .attr('transform', 'rotate(-65)');
+  if (!xLocked) {
+    var new_xScale = t.rescaleX(init_xScale);
+    xScale.domain(new_xScale.domain())
+    focus.select('.axis--x').call(xAxis.scale(new_xScale))
+                            .selectAll('text') // formatting for x axis labels to be slanted
+                            .style('text-anchor', 'end')
+                            .attr('dx', '-.8em')
+                            .attr('dy', '.15em')
+                            .attr('transform', 'rotate(-65)');
+  }
+  if (!yLocked) {
+    var new_yScale = t.rescaleY(init_yScale);
+    yScale.domain(new_yScale.domain());
+    focus.select('.axis--y').call(yAxis.scale(new_yScale));
+  }
 
-  focus.select('.axis--y').call(yAxis.scale(new_yScale));
+  update();
+}
+
+/*var menu = d3.select("#menu select")
+             .on("change", change);
+
+function filterAdded() {
+  var nested = d3.nest()
+                 .key(function(d) {return d.language})
+                 .key(function(d) { return timeFormat(d.published * 1000); })
+                 .rollup(function(v) { return v.length; })
+                 .entries(csv_data);
+
+}*/
+
+
+
+function update() {
   var circle = focus.selectAll('circle')
 
   circle.enter().append('circle')
               .merge(circle)
-                .attr('cy', function(d) { return new_yScale(d.count); })
-                .attr('cx', function(d) { return new_xScale(d.published_date); });
+                .attr('cy', function(d) { return yScale(d.count); })
+                .attr('cx', function(d) { return xScale(d.published_date); });
 
   var scars = focus.selectAll('.scar-group')
 
@@ -71,8 +108,8 @@ function zoomed() {
        .append('g')
        .merge(scars)
        .attr('transform', function(d) {
-         var x = new_xScale(d.published_date);
-         var y = new_yScale(d.count);
+         var x = xScale(parseTime(d.date));
+         var y = init_yScale(3*h/4);
          return 'translate(' + x + ',' + y + ')';
        })
 }
@@ -94,25 +131,39 @@ var xAxis = d3.axisBottom(xScale)
     yAxis = d3.axisLeft(yScale);
 
 // read in the timeline data and store as a dictionary for easy access
-d3.csv("data/timeline.csv", function(timeline_data) {
+var timeline_data;
+d3.csv("data/timeline.csv", function(data) {
+  timeline_data = data;
   timeline_dict = {};
-  timeline_data.forEach(function(d) {
+  data.forEach(function(d) {
     timeline_dict[parseTime(d.date)] = d.event;
   })
 });
 
 // read in the data
-d3.csv("data/grouped_dates.csv", function(data) {
+d3.csv("data/data.csv", function(data) {
   csv_data = data;
-  // format the data from strings to their actual types
-  data.forEach(function(d) {
-    d.published_date = parseTime(d.published_date);
-    d.count = +d.count;
-  });
+
+  var dates = d3.nest()
+  //              .key(function(d) { return d.language})
+                .key(function(d) { return dateToString(d.published * 1000); })
+                .rollup(function(v) { return v.length; })
+                .entries(csv_data);
+
+
+  dates = dates.map(function(d, i) {
+    return {published_date: parseTime(d.key), count: d.value }
+  })
+
+  /*menu.selectAll('option')
+      .data(languages)
+    .enter().append('option')
+      .text(function(d) { return d; })
+  menu.property('value', 'English');*/
 
   // set the domain for the scale
-  xScale.domain(d3.extent(data, function(d) { return d.published_date; }));
-  yScale.domain([0, d3.max(data, function(d) {return d.count; })])
+  xScale.domain(d3.extent(dates, function(d) {return d.published_date;}));
+  yScale.domain([0, d3.max(dates, function(d) {return d.count; })])
   init_xScale = xScale.copy();
   init_yScale = yScale.copy();
 
@@ -120,12 +171,11 @@ d3.csv("data/grouped_dates.csv", function(data) {
   var points = focus.append('g')
                     .attr('class', 'point');
   var circles = points.selectAll('circle')
-     .data(data)
+     .data(dates)
      .enter()
      .append('circle')
      // filter out the special event dates- will be scars later
-     .filter(function(d) { return !timeline_dict[d.published_date] })
-
+     //.filter(function(d) { return !timeline_dict[d.published_date] })
      .attr('cx', function(d) { return xScale(d.published_date) })
      .attr('cy', function(d) { return yScale(d.count) })
      .attr('r', 2)
@@ -135,23 +185,22 @@ d3.csv("data/grouped_dates.csv", function(data) {
 
   // draw the timeline events as scars
   var scars = points.selectAll('polygon')
-       .data(data)
+       .data(timeline_data)
        .enter()
        // filter for only events
-       .filter(function(d) { return timeline_dict[d.published_date]; })
+       //.filter(function(d) { return timeline_dict[d.published_date]; })
        .append('g')
        .attr('class', 'scar-group')
        // draw the scar and transform to where the point should be
        .attr('transform', function(d) {
-         var x = xScale(d.published_date);
-         var y = yScale(d.count);
+         var x = xScale(parseTime(d.date));
+         var y = yScale(3*h/4);
          return 'translate(' + x +',' + y +')';
        })
        .append('polygon')
        .attr('points', function(d) {
          return [newScar].join(" ");
        })
-
        .attr('stroke', otherColor)
        .attr('fill', otherColor)
        .attr('stroke-width', 2)
@@ -218,7 +267,7 @@ d3.csv("data/grouped_dates.csv", function(data) {
 
       scars.transition()
            .delay(function(d, i) {
-             return i * 50;
+             return i * 40;
            })
            .attr('stroke', otherColor)
            .attr('fill', otherColor);
@@ -227,24 +276,25 @@ d3.csv("data/grouped_dates.csv", function(data) {
 
  // function to handle when someone mouses over an event
  function handleScarMouseOver(d, i) {
-
+   date = parseTime(d.date);
    d3.select(this)
      .attr('transform', 'scale(1.5)');
 
    var group = focus.append('g')
-                 .attr('id', 'id-'+dateToString(d.published_date));
+                 .attr('id', 'id-'+dateToString(date));
 
    var text = group.append('text')
-                   .attr("x", xScale(d.published_date)- 20 )
-                   .attr("y", yScale(d.count)- 5)
+                   .attr("x", xScale(date)- 20 )
+                   //.attr("y", yScale(d.count)- 5)
+                   .attr('y', yScale(3*h/4) - 20)
                    .attr('text-anchor', 'middle')
                    .attr('class', 'timeline-label')
-                   .text(dateToLabel(d.published_date) + ": "
-                     + timeline_dict[d.published_date]);
+                   .text(dateToLabel(date) + ": "
+                     + timeline_dict[date]);
 
     group.append('line')
-         .attr('x1', xScale(d.published_date))
-         .attr('x2', xScale(d.published_date))
+         .attr('x1', xScale(date))
+         .attr('x2', xScale(date))
          .attr('y1', h)
          .attr('y2', 0)
          .style('stroke-width', 1)
@@ -270,7 +320,7 @@ d3.csv("data/grouped_dates.csv", function(data) {
    d3.select(this)
      .attr('transform', '');
 
-   d3.select('#id-'+dateToString(d.published_date)).remove();
+   d3.select('#id-'+dateToString(parseTime(d.date))).remove();
  }
 
  // function to handle when user hovers over a point
