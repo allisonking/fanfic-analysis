@@ -5,12 +5,14 @@
   <title>After All This Time?</title>
   <!-- Import D3 -->
   <script src="https://d3js.org/d3.v4.min.js"></script>
+
   <!--<script src="js/d3.min.js"></script>-->
   <link rel="stylesheet" type='text/css' href="css/pub-time.css">
 
 </head>
 
 <body>
+
   Why not show your house pride? <br>
   <form class="house-input">
 
@@ -21,14 +23,13 @@
 
     <input type="checkbox" id="yLocked">Lock y axis <br>
     <input type="checkbox" id="xLocked">Lock x axis <br> <br>
-    <p id="menu"><br>Show: <select></select>
+    <input type='checkbox' id='test'> Testing<br><br>
+    <p id="menu"><br>Character: <select><option value="all">All Characters</option></select>
 
   </form>
 
-
+<script src="js/get-data.js"></script>
 <script src="js/pub-time.js"></script>
-<script>
-console.log(w);
-</script>
+
 </body>
 </html>

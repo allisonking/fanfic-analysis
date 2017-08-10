@@ -6,7 +6,7 @@ var w = 1200 - margin.left - margin.right;
 var h = 600 - margin.top - margin.bottom;
 
 // functions to parse/format the date
-var parseTime = d3.timeParse("%Y-%m-%d");
+
 var dateToString = d3.timeFormat("%Y-%m-%d");
 var dateToLabel = d3.timeFormat("%m/%d/%y")
 
@@ -43,7 +43,7 @@ var focus = svg.append('g')
             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
 var csv_data;
-
+d3.select('#menu').on('change', characterChanged);
 d3.select('#xLocked').on('change', xLockeded);
 d3.select('#yLocked').on('change', yLockeded);
 var xLocked = false;
@@ -58,6 +58,21 @@ function yLockeded() {
     yLocked = true;
   } else { yLocked = false;}
 }
+
+function characterChanged() {
+  if (menu.property('value') == 'All') {
+    cur_display = allData;
+  } else {
+    cur_display = characters[menu.property('value')];
+  }
+  //xScale.domain(d3.extent(cur_display, function(d) {return d.date;}));
+  //yScale.domain([0, d3.max(cur_display, function(d) {return d.count; })])
+  update();
+}
+
+//function setScale() {
+
+//}
 
 function zoomed() {
   var t = d3.event.transform;
@@ -95,12 +110,16 @@ function filterAdded() {
 
 
 function update() {
-  var circle = focus.selectAll('circle')
 
+  var circle = focus.selectAll('circle')
+                    .data(cur_display)
+
+  circle.exit().remove();
   circle.enter().append('circle')
               .merge(circle)
+                //.transition()
                 .attr('cy', function(d) { return yScale(d.count); })
-                .attr('cx', function(d) { return xScale(d.published_date); });
+                .attr('cx', function(d) { return xScale(d.date); });
 
   var scars = focus.selectAll('.scar-group')
 
@@ -108,7 +127,7 @@ function update() {
        .append('g')
        .merge(scars)
        .attr('transform', function(d) {
-         var x = xScale(parseTime(d.date));
+         var x = xScale(d.date);
          var y = h/6;
          return 'translate(' + x + ',' + y + ')';
        })
@@ -133,28 +152,34 @@ var xAxis = d3.axisBottom(xScale)
 // read in the timeline data and store as a dictionary for easy access
 var timeline_data;
 d3.csv("data/timeline.csv", function(data) {
-  timeline_data = data;
-  timeline_dict = {};
   data.forEach(function(d) {
-    timeline_dict[parseTime(d.date)] = d.event;
+    d.date = parseTime(d.date);
   })
+  timeline_data = data;
 });
 
-// read in the data
-d3.csv("data/dev-data.csv", function(data) {
-  csv_data = data;
 
-  var dates = d3.nest()
-  //              .key(function(d) { return d.language})
+
+var cur_display;
+var languages;
+var allData;
+// read in the data
+d3.csv("data/grouped_dates.csv", function(data) {
+
+  /*var dates = d3.nest()
                 .key(function(d) { return dateToString(d.published * 1000); })
                 .rollup(function(v) { return v.length; })
                 .entries(csv_data);
 
-
   dates = dates.map(function(d, i) {
-    return {published_date: parseTime(d.key), count: d.value }
+    return {date: parseTime(d.key), count: d.value }
+  })*/
+  data.forEach(function(d) {
+    d.date = parseTime(d.date);
+    d.count = +d.count;
   })
-
+  cur_display = data;
+  allData = data;
   /*menu.selectAll('option')
       .data(languages)
     .enter().append('option')
@@ -162,8 +187,8 @@ d3.csv("data/dev-data.csv", function(data) {
   menu.property('value', 'English');*/
 
   // set the domain for the scale
-  xScale.domain(d3.extent(dates, function(d) {return d.published_date;}));
-  yScale.domain([0, d3.max(dates, function(d) {return d.count; })])
+  xScale.domain(d3.extent(data, function(d) {return d.date;}));
+  yScale.domain([0, d3.max(data, function(d) {return d.count; })])
   init_xScale = xScale.copy();
   init_yScale = yScale.copy();
 
@@ -171,12 +196,10 @@ d3.csv("data/dev-data.csv", function(data) {
   var points = focus.append('g')
                     .attr('class', 'point');
   var circles = points.selectAll('circle')
-     .data(dates)
+     .data(data)
      .enter()
      .append('circle')
-     // filter out the special event dates- will be scars later
-     //.filter(function(d) { return !timeline_dict[d.published_date] })
-     .attr('cx', function(d) { return xScale(d.published_date) })
+     .attr('cx', function(d) { return xScale(d.date) })
      .attr('cy', function(d) { return yScale(d.count) })
      .attr('r', 2)
      .attr('fill', baseColor)
@@ -187,13 +210,11 @@ d3.csv("data/dev-data.csv", function(data) {
   var scars = points.selectAll('polygon')
        .data(timeline_data)
        .enter()
-       // filter for only events
-       //.filter(function(d) { return timeline_dict[d.published_date]; })
        .append('g')
        .attr('class', 'scar-group')
        // draw the scar and transform to where the point should be
        .attr('transform', function(d) {
-         var x = xScale(parseTime(d.date));
+         var x = xScale(d.date);
          var y = h/6;
          return 'translate(' + x +',' + y +')';
        })
@@ -222,21 +243,11 @@ d3.csv("data/dev-data.csv", function(data) {
                 .attr('class', 'axis axis--y')
                 .call(yAxis);
 
-    // now for some titles/labels
-    focus.append('text')
-       .attr('text-anchor', 'middle')
-       .attr('transform', 'translate(' + -margin.left/2 +',' + (h/2) +')rotate(-90)')
-       .text('Number of Fan Fictions Published');
-    focus.append('text')
-       .attr('text-anchor', 'middle')
-       .attr('transform', 'translate(' + (w/2) + ',' + (h + margin.bottom * 3/4) +')')
-       .text('Date');
-    focus.append('text')
-       .attr('text-anchor', 'middle')
-       .attr('transform', 'translate(' + (w/2) + ',' + -margin.top/2 + ')')
-       .text('Harry Potter Fan Fiction Publications Over Time');
+
 
     d3.selectAll("input[name='houses']").on("change", function(){
+      var oldBase = baseColor;
+      var oldOther = otherColor;
       switch(this.value) {
         case 'Gryffindor':
           baseColor = 'red';
@@ -274,27 +285,40 @@ d3.csv("data/dev-data.csv", function(data) {
     });
 });
 
+
+// now for some titles/labels
+focus.append('text')
+   .attr('text-anchor', 'middle')
+   .attr('transform', 'translate(' + -margin.left/2 +',' + (h/2) +')rotate(-90)')
+   .text('Number of Fan Fictions Published');
+focus.append('text')
+   .attr('text-anchor', 'middle')
+   .attr('transform', 'translate(' + (w/2) + ',' + (h + margin.bottom * 3/4) +')')
+   .text('Date');
+focus.append('text')
+   .attr('text-anchor', 'middle')
+   .attr('transform', 'translate(' + (w/2) + ',' + -margin.top/2 + ')')
+   .text('Harry Potter Fan Fiction Publications Over Time');
+
  // function to handle when someone mouses over an event
  function handleScarMouseOver(d, i) {
-   date = parseTime(d.date);
    d3.select(this)
      .attr('transform', 'scale(1.5)');
 
    var group = focus.append('g')
-                 .attr('id', 'id-'+dateToString(date));
+                 .attr('id', 'id-'+dateToString(d.date));
 
    var text = group.append('text')
-                   .attr("x", xScale(date)- 20 )
-                   //.attr("y", yScale(d.count)- 5)
+                   .attr("x", xScale(d.date)- 20 )
                    .attr('y', h/6+30)
                    .attr('text-anchor', 'middle')
                    .attr('class', 'timeline-label')
-                   .text(dateToLabel(date) + ": "
-                     + timeline_dict[date]);
+                   .text(dateToLabel(d.date) + ": "
+                     + d.event);
 
     group.append('line')
-         .attr('x1', xScale(date))
-         .attr('x2', xScale(date))
+         .attr('x1', xScale(d.date))
+         .attr('x2', xScale(d.date))
          .attr('y1', h)
          .attr('y2', 0)
          .style('stroke-width', 1)
@@ -320,7 +344,7 @@ d3.csv("data/dev-data.csv", function(data) {
    d3.select(this)
      .attr('transform', '');
 
-   d3.select('#id-'+dateToString(parseTime(d.date))).remove();
+   d3.select('#id-'+dateToString(d.date)).remove();
  }
 
  // function to handle when user hovers over a point
@@ -332,13 +356,13 @@ d3.csv("data/dev-data.csv", function(data) {
 
    // assign the text labeling a group and ID so we can delete it later
    group = focus.append('g')
-              .attr('id', 'id-'+dateToString(d.published_date));
+              .attr('id', 'id-'+dateToString(d.date));
 
    var text = group.append('text')
-                 .attr("x", xScale(d.published_date) - 20 )
+                 .attr("x", xScale(d.date) - 20 )
                  .attr("y", yScale(d.count) - 5)
                  .attr('text-anchor', 'middle')
-                 .text(dateToLabel(d.published_date) + ": " + d.count);
+                 .text(dateToLabel(d.date) + ": " + d.count);
 
    // get the bbox so we can place a background
    var bbox = text.node().getBBox();
@@ -361,5 +385,5 @@ d3.csv("data/dev-data.csv", function(data) {
    d3.select(this)
      .attr('fill', baseColor)
      .attr('r', 2);
-   d3.select('#id-'+dateToString(d.published_date)).remove();
+   d3.select('#id-'+dateToString(d.date)).remove();
  }
