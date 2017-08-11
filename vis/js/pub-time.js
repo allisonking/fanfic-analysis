@@ -72,7 +72,12 @@ function characterChanged() {
 }
 
 function updateScale(new_x, new_y) {
-  focus.select('.axis--x').call(xAxis.scale(new_x));
+  focus.select('.axis--x').call(xAxis.scale(new_x))
+                          .selectAll('text')
+                          .style('text-anchor', 'end')
+                          .attr('dx', '-.8em')
+                          .attr('dy', '.15em')
+                          .attr('transform', 'rotate(-65)');
   focus.select('.axis--y').call(yAxis.scale(new_y));
   init_xScale = new_x.copy();
   init_yScale = new_y.copy();
