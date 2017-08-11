@@ -60,19 +60,23 @@ function yLockeded() {
 }
 
 function characterChanged() {
-  if (menu.property('value') == 'All') {
+  if (menu.property('value') == 'all') {
     cur_display = allData;
   } else {
     cur_display = characters[menu.property('value')];
   }
-  //xScale.domain(d3.extent(cur_display, function(d) {return d.date;}));
-  //yScale.domain([0, d3.max(cur_display, function(d) {return d.count; })])
+  xScale.domain(d3.extent(cur_display, function(d) {return d.date;}));
+  yScale.domain([0, d3.max(cur_display, function(d) {return d.count; })])
+  updateScale(xScale, yScale);
   update();
 }
 
-//function setScale() {
-
-//}
+function updateScale(new_x, new_y) {
+  focus.select('.axis--x').call(xAxis.scale(new_x));
+  focus.select('.axis--y').call(yAxis.scale(new_y));
+  init_xScale = new_x.copy();
+  init_yScale = new_y.copy();
+}
 
 function zoomed() {
   var t = d3.event.transform;
@@ -113,15 +117,10 @@ function update() {
 
   // update
   circles.merge(enterCircles)
-              /*.delay(function(d, i) {
-                return i * .25;
-              })
-                .transition()*/
                 .attr('cy', function(d) { return yScale(d.count); })
                 .attr('cx', function(d) { return xScale(d.date); });
 
   var scars = focus.selectAll('.scar-group')
-
   scars.enter()
        .merge(scars)
        .attr('transform', function(d) {
@@ -156,15 +155,6 @@ var languages;
 var allData;
 // read in the data
 d3.csv("data/grouped_dates.csv", function(data) {
-
-  /*var dates = d3.nest()
-                .key(function(d) { return dateToString(d.published * 1000); })
-                .rollup(function(v) { return v.length; })
-                .entries(csv_data);
-
-  dates = dates.map(function(d, i) {
-    return {date: parseTime(d.key), count: d.value }
-  })*/
   data.forEach(function(d) {
     d.date = parseTime(d.date);
     d.count = +d.count;

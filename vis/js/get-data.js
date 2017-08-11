@@ -7,8 +7,8 @@ var characters = {};
 var character_list = ['albus_severus', 'draco', 'dumbledore', 'fred', 'ginny',
 'harry', 'hermione', 'lily', 'lupin', 'neville', 'ron', 'sirius', 'snape', 'voldemort'];
 
-var character_mapping = {'albus_severus' : 'Albus Severus Potter',
-'draco' : 'Draco Malfoy', 'dumbledore' : 'Albus Dumbledore', 'fred' : 'Fred Weasley', 'ginny' : 'Ginny Weasley',
+var character_mapping = {'all':'All Characters','albus_severus' : 'Albus Severus Potter',
+'dumbledore' : 'Albus Dumbledore', 'draco' : 'Draco Malfoy', 'fred' : 'Fred Weasley', 'ginny' : 'Ginny Weasley',
 'harry' : 'Harry Potter', 'hermione' : 'Hermione Granger', 'lily' : 'Lily Potter (Evans)',
 'lupin': 'Remus Lupin', 'neville': 'Neville Longbottom', 'ron': 'Ron Weasley',
 'sirius': 'Sirius Black', 'snape': 'Severus Snape', 'voldemort' : 'Lord Voldemort'}
@@ -27,7 +27,7 @@ function getCharacterData(character_name) {
     characters[character_name] = data;
   })
 }
-
+character_list.unshift('all')
 var menu = d3.select('#menu select')
 
 
