@@ -6,7 +6,7 @@ var w = 1200 - margin.left - margin.right;
 var h = 600 - margin.top - margin.bottom;
 
 // functions to parse/format the date
-var parseTime = d3.timeParse("%Y-%m-%d");
+
 var dateToString = d3.timeFormat("%Y-%m-%d");
 var dateToLabel = d3.timeFormat("%m/%d/%y")
 
@@ -43,36 +43,94 @@ var focus = svg.append('g')
             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
 var csv_data;
+d3.select('#menu').on('change', characterChanged);
+d3.select('#xLocked').on('change', xLockeded);
+d3.select('#yLocked').on('change', yLockeded);
+var xLocked = false;
+var yLocked = false;
+function xLockeded(){
+  if (d3.select('#xLocked').property('checked')) {
+    xLocked = true;
+  } else { xLocked = false;}
+}
+function yLockeded() {
+  if (d3.select('#yLocked').property('checked')) {
+    yLocked = true;
+  } else { yLocked = false;}
+}
 
-function zoomed() {
-  var t = d3.event.transform;
-  var new_xScale = t.rescaleX(init_xScale);
-  var new_yScale = t.rescaleY(init_yScale);
-  xScale.domain(new_xScale.domain())
-  yScale.domain(new_yScale.domain());
-  focus.select('.axis--x').call(xAxis.scale(new_xScale))
-                          .selectAll('text') // formatting for x axis labels to be slanted
+function characterChanged() {
+  if (menu.property('value') == 'all') {
+    cur_display = allData;
+  } else {
+    cur_display = characters[menu.property('value')];
+  }
+  xScale.domain(d3.extent(cur_display, function(d) {return d.date;}));
+  yScale.domain([0, d3.max(cur_display, function(d) {return d.count; })])
+  updateScale(xScale, yScale);
+  update();
+}
+
+function updateScale(new_x, new_y) {
+  focus.select('.axis--x').call(xAxis.scale(new_x))
+                          .selectAll('text')
                           .style('text-anchor', 'end')
                           .attr('dx', '-.8em')
                           .attr('dy', '.15em')
                           .attr('transform', 'rotate(-65)');
+  focus.select('.axis--y').call(yAxis.scale(new_y));
+  init_xScale = new_x.copy();
+  init_yScale = new_y.copy();
+}
 
-  focus.select('.axis--y').call(yAxis.scale(new_yScale));
-  var circle = focus.selectAll('circle')
+function zoomed() {
+  var t = d3.event.transform;
+  if (!xLocked) {
+    var new_xScale = t.rescaleX(init_xScale);
+    xScale.domain(new_xScale.domain())
+    focus.select('.axis--x').call(xAxis.scale(new_xScale))
+                            .selectAll('text') // formatting for x axis labels to be slanted
+                            .style('text-anchor', 'end')
+                            .attr('dx', '-.8em')
+                            .attr('dy', '.15em')
+                            .attr('transform', 'rotate(-65)');
+  }
+  if (!yLocked) {
+    var new_yScale = t.rescaleY(init_yScale);
+    yScale.domain(new_yScale.domain());
+    focus.select('.axis--y').call(yAxis.scale(new_yScale));
+  }
 
-  circle.enter().append('circle')
-              .merge(circle)
-                .attr('cy', function(d) { return new_yScale(d.count); })
-                .attr('cx', function(d) { return new_xScale(d.published_date); });
+  update();
+}
+
+function update() {
+  var pointGroup = focus.selectAll('.point')
+
+  var circles = pointGroup.selectAll('circle')
+                     .data(cur_display);
+
+  // exit
+  circles.exit().remove();
+  // enter
+  var enterCircles = circles.enter()
+                            .append('circle')
+                            .attr('r', 2)
+                            .attr('fill', baseColor)
+                            .on('mouseover', handleCircleMouseOver)
+                            .on('mouseout', handleCircleMouseOut);
+
+  // update
+  circles.merge(enterCircles)
+                .attr('cy', function(d) { return yScale(d.count); })
+                .attr('cx', function(d) { return xScale(d.date); });
 
   var scars = focus.selectAll('.scar-group')
-
   scars.enter()
-       .append('g')
        .merge(scars)
        .attr('transform', function(d) {
-         var x = new_xScale(d.published_date);
-         var y = new_yScale(d.count);
+         var x = xScale(d.date);
+         var y = h/6;
          return 'translate(' + x + ',' + y + ')';
        })
 }
@@ -93,158 +151,146 @@ var xAxis = d3.axisBottom(xScale)
               .ticks(15),
     yAxis = d3.axisLeft(yScale);
 
-// read in the timeline data and store as a dictionary for easy access
-d3.csv("data/timeline.csv", function(timeline_data) {
-  timeline_dict = {};
-  timeline_data.forEach(function(d) {
-    timeline_dict[parseTime(d.date)] = d.event;
-  })
-});
+// add a group where all the points can append to
+focus.append('g')
+     .attr('class', 'point');
 
+var cur_display;
+var languages;
+var allData;
 // read in the data
 d3.csv("data/grouped_dates.csv", function(data) {
-  csv_data = data;
-  // format the data from strings to their actual types
   data.forEach(function(d) {
-    d.published_date = parseTime(d.published_date);
+    d.date = parseTime(d.date);
     d.count = +d.count;
-  });
+  })
+  cur_display = data;
+  allData = data;
 
   // set the domain for the scale
-  xScale.domain(d3.extent(data, function(d) { return d.published_date; }));
+  xScale.domain(d3.extent(data, function(d) {return d.date;}));
   yScale.domain([0, d3.max(data, function(d) {return d.count; })])
   init_xScale = xScale.copy();
   init_yScale = yScale.copy();
+  // add the axes
+  focus.append('g')
+       .attr('class', 'axis axis--x')
+       .attr('transform', 'translate(0,' + h + ')')
+       .call(xAxis)
+        .selectAll('text') // formatting for x axis labels to be slanted
+        .style('text-anchor', 'end')
+        .attr('dx', '-.8em')
+        .attr('dy', '.15em')
+        .attr('transform', 'rotate(-65)');
 
-  // and now to draw the circles for the scatterplot
-  var points = focus.append('g')
-                    .attr('class', 'point');
-  var circles = points.selectAll('circle')
-     .data(data)
-     .enter()
-     .append('circle')
-     // filter out the special event dates- will be scars later
-     .filter(function(d) { return !timeline_dict[d.published_date] })
+  focus.append('g')
+       .attr('class', 'axis axis--y')
+       .call(yAxis);
 
-     .attr('cx', function(d) { return xScale(d.published_date) })
-     .attr('cy', function(d) { return yScale(d.count) })
-     .attr('r', 2)
-     .attr('fill', baseColor)
-     .on('mouseover', handleCircleMouseOver)
-     .on('mouseout', handleCircleMouseOut);
+  // read in the timeline data and store as a dictionary for easy access
+  d3.csv("data/timeline.csv", function(data) {
+    data.forEach(function(d) {
+      d.date = parseTime(d.date);
+    })
+    // draw the timeline events as scars
+    focus.selectAll('.point')
+         .selectAll('polygon')
+         .data(data)
+         .enter()
+         .append('g')
+         .attr('class', 'scar-group')
+         .append('polygon')
+         .attr('points', function(d) {
+           return [newScar].join(" ");
+         })
+         .attr('stroke', otherColor)
+         .attr('fill', otherColor)
+         .attr('stroke-width', 2)
+         .on('mouseover', handleScarMouseOver)
+         .on('mouseout', handleScarMouseOut);
 
-  // draw the timeline events as scars
-  var scars = points.selectAll('polygon')
-       .data(data)
-       .enter()
-       // filter for only events
-       .filter(function(d) { return timeline_dict[d.published_date]; })
-       .append('g')
-       .attr('class', 'scar-group')
-       // draw the scar and transform to where the point should be
-       .attr('transform', function(d) {
-         var x = xScale(d.published_date);
-         var y = yScale(d.count);
-         return 'translate(' + x +',' + y +')';
-       })
-       .append('polygon')
-       .attr('points', function(d) {
-         return [newScar].join(" ");
-       })
+    update();
+  });
 
-       .attr('stroke', otherColor)
-       .attr('fill', otherColor)
-       .attr('stroke-width', 2)
-       .on('mouseover', handleScarMouseOver)
-       .on('mouseout', handleScarMouseOut);
-
-    var gX = focus.append('g')
-                .attr('class', 'axis axis--x')
-                .attr('transform', 'translate(0,' + h + ')')
-                .call(xAxis)
-                .selectAll('text') // formatting for x axis labels to be slanted
-                  .style('text-anchor', 'end')
-                  .attr('dx', '-.8em')
-                  .attr('dy', '.15em')
-                  .attr('transform', 'rotate(-65)');
-
-    // add the y
-    var gY = focus.append('g')
-                .attr('class', 'axis axis--y')
-                .call(yAxis);
-
-    // now for some titles/labels
-    focus.append('text')
-       .attr('text-anchor', 'middle')
-       .attr('transform', 'translate(' + -margin.left/2 +',' + (h/2) +')rotate(-90)')
-       .text('Number of Fan Fictions Published');
-    focus.append('text')
-       .attr('text-anchor', 'middle')
-       .attr('transform', 'translate(' + (w/2) + ',' + (h + margin.bottom * 3/4) +')')
-       .text('Date');
-    focus.append('text')
-       .attr('text-anchor', 'middle')
-       .attr('transform', 'translate(' + (w/2) + ',' + -margin.top/2 + ')')
-       .text('Harry Potter Fan Fiction Publications Over Time');
-
-    d3.selectAll("input[name='houses']").on("change", function(){
-      switch(this.value) {
-        case 'Gryffindor':
-          baseColor = 'red';
-          otherColor = '#ffd700';
-          break;
-        case 'Hufflepuff':
-          baseColor = 'yellow';
-          otherColor = 'black';
-          break;
-        case 'Slytherin':
-          baseColor = '#c0c0c0';
-          otherColor = 'green';
-          break;
-        case 'Ravenclaw':
-          baseColor = 'blue';
-          otherColor = '#cd7f32'; //bronze
-          break;
-        default:
-          baseColor = 'red';
-          otherColor = '#ffd700';
-      }
-      circles.transition()
-             .delay(function(d, i) {
-               return i * .25;
-             })
-             .duration(100)
-             .attr('fill', baseColor);
-
-      scars.transition()
-           .delay(function(d, i) {
-             return i * 50;
-           })
-           .attr('stroke', otherColor)
-           .attr('fill', otherColor);
-    });
 });
+
+// now for some titles/labels
+focus.append('text')
+   .attr('text-anchor', 'middle')
+   .attr('transform', 'translate(' + -margin.left/2 +',' + (h/2) +')rotate(-90)')
+   .text('Number of Fan Fictions Published');
+focus.append('text')
+   .attr('text-anchor', 'middle')
+   .attr('transform', 'translate(' + (w/2) + ',' + (h + margin.bottom * 3/4) +')')
+   .text('Date');
+focus.append('text')
+   .attr('text-anchor', 'middle')
+   .attr('transform', 'translate(' + (w/2) + ',' + -margin.top/2 + ')')
+   .text('Harry Potter Fan Fiction Publications Over Time');
+
+   d3.selectAll("input[name='houses']").on("change", updateColor)
+
+ function updateColor() {
+   var oldBase = baseColor;
+   var oldOther = otherColor;
+   switch(this.value) {
+     case 'Gryffindor':
+       baseColor = 'red';
+       otherColor = '#ffd700';
+       break;
+     case 'Hufflepuff':
+       baseColor = 'yellow';
+       otherColor = 'black';
+       break;
+     case 'Slytherin':
+       baseColor = '#c0c0c0';
+       otherColor = 'green';
+       break;
+     case 'Ravenclaw':
+       baseColor = 'blue';
+       otherColor = '#cd7f32'; //bronze
+       break;
+     default:
+       baseColor = 'red';
+       otherColor = '#ffd700';
+   }
+   var circles = focus.selectAll('circle')
+                      .data(cur_display)
+   circles.transition()
+          .delay(function(d, i) {
+            return i * .25;
+          })
+          .duration(100)
+          .attr('fill', baseColor);
+
+   var scars = focus.selectAll('.scar-group polygon')
+   scars.transition()
+        .delay(function(d, i) {
+          return i * 40;
+        })
+        .attr('stroke', otherColor)
+        .attr('fill', otherColor);
+ }
 
  // function to handle when someone mouses over an event
  function handleScarMouseOver(d, i) {
-
    d3.select(this)
      .attr('transform', 'scale(1.5)');
 
    var group = focus.append('g')
-                 .attr('id', 'id-'+dateToString(d.published_date));
+                 .attr('id', 'id-'+dateToString(d.date));
 
    var text = group.append('text')
-                   .attr("x", xScale(d.published_date)- 20 )
-                   .attr("y", yScale(d.count)- 5)
+                   .attr("x", xScale(d.date)- 20 )
+                   .attr('y', h/6+30)
                    .attr('text-anchor', 'middle')
                    .attr('class', 'timeline-label')
-                   .text(dateToLabel(d.published_date) + ": "
-                     + timeline_dict[d.published_date]);
+                   .text(dateToLabel(d.date) + ": "
+                     + d.event);
 
     group.append('line')
-         .attr('x1', xScale(d.published_date))
-         .attr('x2', xScale(d.published_date))
+         .attr('x1', xScale(d.date))
+         .attr('x2', xScale(d.date))
          .attr('y1', h)
          .attr('y2', 0)
          .style('stroke-width', 1)
@@ -270,7 +316,7 @@ d3.csv("data/grouped_dates.csv", function(data) {
    d3.select(this)
      .attr('transform', '');
 
-   d3.select('#id-'+dateToString(d.published_date)).remove();
+   d3.select('#id-'+dateToString(d.date)).remove();
  }
 
  // function to handle when user hovers over a point
@@ -282,13 +328,13 @@ d3.csv("data/grouped_dates.csv", function(data) {
 
    // assign the text labeling a group and ID so we can delete it later
    group = focus.append('g')
-              .attr('id', 'id-'+dateToString(d.published_date));
+              .attr('id', 'id-'+dateToString(d.date));
 
    var text = group.append('text')
-                 .attr("x", xScale(d.published_date) - 20 )
+                 .attr("x", xScale(d.date) - 20 )
                  .attr("y", yScale(d.count) - 5)
                  .attr('text-anchor', 'middle')
-                 .text(dateToLabel(d.published_date) + ": " + d.count);
+                 .text(dateToLabel(d.date) + ": " + d.count);
 
    // get the bbox so we can place a background
    var bbox = text.node().getBBox();
@@ -311,5 +357,5 @@ d3.csv("data/grouped_dates.csv", function(data) {
    d3.select(this)
      .attr('fill', baseColor)
      .attr('r', 2);
-   d3.select('#id-'+dateToString(d.published_date)).remove();
+   d3.select('#id-'+dateToString(d.date)).remove();
  }
