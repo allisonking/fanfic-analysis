@@ -95,36 +95,34 @@ function zoomed() {
   update();
 }
 
-/*var menu = d3.select("#menu select")
-             .on("change", change);
-
-function filterAdded() {
-  var nested = d3.nest()
-                 .key(function(d) {return d.language})
-                 .key(function(d) { return timeFormat(d.published * 1000); })
-                 .rollup(function(v) { return v.length; })
-                 .entries(csv_data);
-
-}*/
-
-
-
 function update() {
+  var pointGroup = focus.selectAll('.point')
 
-  var circle = focus.selectAll('circle')
-                    .data(cur_display)
+  var circles = pointGroup.selectAll('circle')
+                     .data(cur_display);
 
-  circle.exit().remove();
-  circle.enter().append('circle')
-              .merge(circle)
-                //.transition()
+  // exit
+  circles.exit().remove();
+  // enter
+  var enterCircles = circles.enter()
+                            .append('circle')
+                            .attr('r', 2)
+                            .attr('fill', baseColor)
+                            .on('mouseover', handleCircleMouseOver)
+                            .on('mouseout', handleCircleMouseOut);
+
+  // update
+  circles.merge(enterCircles)
+              /*.delay(function(d, i) {
+                return i * .25;
+              })
+                .transition()*/
                 .attr('cy', function(d) { return yScale(d.count); })
                 .attr('cx', function(d) { return xScale(d.date); });
 
   var scars = focus.selectAll('.scar-group')
 
   scars.enter()
-       .append('g')
        .merge(scars)
        .attr('transform', function(d) {
          var x = xScale(d.date);
@@ -149,16 +147,9 @@ var xAxis = d3.axisBottom(xScale)
               .ticks(15),
     yAxis = d3.axisLeft(yScale);
 
-// read in the timeline data and store as a dictionary for easy access
-var timeline_data;
-d3.csv("data/timeline.csv", function(data) {
-  data.forEach(function(d) {
-    d.date = parseTime(d.date);
-  })
-  timeline_data = data;
-});
-
-
+// add a group where all the points can append to
+focus.append('g')
+     .attr('class', 'point');
 
 var cur_display;
 var languages;
@@ -180,111 +171,53 @@ d3.csv("data/grouped_dates.csv", function(data) {
   })
   cur_display = data;
   allData = data;
-  /*menu.selectAll('option')
-      .data(languages)
-    .enter().append('option')
-      .text(function(d) { return d; })
-  menu.property('value', 'English');*/
 
   // set the domain for the scale
   xScale.domain(d3.extent(data, function(d) {return d.date;}));
   yScale.domain([0, d3.max(data, function(d) {return d.count; })])
   init_xScale = xScale.copy();
   init_yScale = yScale.copy();
+  // add the axes
+  focus.append('g')
+       .attr('class', 'axis axis--x')
+       .attr('transform', 'translate(0,' + h + ')')
+       .call(xAxis)
+        .selectAll('text') // formatting for x axis labels to be slanted
+        .style('text-anchor', 'end')
+        .attr('dx', '-.8em')
+        .attr('dy', '.15em')
+        .attr('transform', 'rotate(-65)');
 
-  // and now to draw the circles for the scatterplot
-  var points = focus.append('g')
-                    .attr('class', 'point');
-  var circles = points.selectAll('circle')
-     .data(data)
-     .enter()
-     .append('circle')
-     .attr('cx', function(d) { return xScale(d.date) })
-     .attr('cy', function(d) { return yScale(d.count) })
-     .attr('r', 2)
-     .attr('fill', baseColor)
-     .on('mouseover', handleCircleMouseOver)
-     .on('mouseout', handleCircleMouseOut);
+  focus.append('g')
+       .attr('class', 'axis axis--y')
+       .call(yAxis);
 
-  // draw the timeline events as scars
-  var scars = points.selectAll('polygon')
-       .data(timeline_data)
-       .enter()
-       .append('g')
-       .attr('class', 'scar-group')
-       // draw the scar and transform to where the point should be
-       .attr('transform', function(d) {
-         var x = xScale(d.date);
-         var y = h/6;
-         return 'translate(' + x +',' + y +')';
-       })
-       .append('polygon')
-       .attr('points', function(d) {
-         return [newScar].join(" ");
-       })
-       .attr('stroke', otherColor)
-       .attr('fill', otherColor)
-       .attr('stroke-width', 2)
-       .on('mouseover', handleScarMouseOver)
-       .on('mouseout', handleScarMouseOut);
+  // read in the timeline data and store as a dictionary for easy access
+  d3.csv("data/timeline.csv", function(data) {
+    data.forEach(function(d) {
+      d.date = parseTime(d.date);
+    })
+    // draw the timeline events as scars
+    focus.selectAll('.point')
+         .selectAll('polygon')
+         .data(data)
+         .enter()
+         .append('g')
+         .attr('class', 'scar-group')
+         .append('polygon')
+         .attr('points', function(d) {
+           return [newScar].join(" ");
+         })
+         .attr('stroke', otherColor)
+         .attr('fill', otherColor)
+         .attr('stroke-width', 2)
+         .on('mouseover', handleScarMouseOver)
+         .on('mouseout', handleScarMouseOut);
 
-    var gX = focus.append('g')
-                .attr('class', 'axis axis--x')
-                .attr('transform', 'translate(0,' + h + ')')
-                .call(xAxis)
-                .selectAll('text') // formatting for x axis labels to be slanted
-                  .style('text-anchor', 'end')
-                  .attr('dx', '-.8em')
-                  .attr('dy', '.15em')
-                  .attr('transform', 'rotate(-65)');
+    update();
+  });
 
-    // add the y
-    var gY = focus.append('g')
-                .attr('class', 'axis axis--y')
-                .call(yAxis);
-
-
-
-    d3.selectAll("input[name='houses']").on("change", function(){
-      var oldBase = baseColor;
-      var oldOther = otherColor;
-      switch(this.value) {
-        case 'Gryffindor':
-          baseColor = 'red';
-          otherColor = '#ffd700';
-          break;
-        case 'Hufflepuff':
-          baseColor = 'yellow';
-          otherColor = 'black';
-          break;
-        case 'Slytherin':
-          baseColor = '#c0c0c0';
-          otherColor = 'green';
-          break;
-        case 'Ravenclaw':
-          baseColor = 'blue';
-          otherColor = '#cd7f32'; //bronze
-          break;
-        default:
-          baseColor = 'red';
-          otherColor = '#ffd700';
-      }
-      circles.transition()
-             .delay(function(d, i) {
-               return i * .25;
-             })
-             .duration(100)
-             .attr('fill', baseColor);
-
-      scars.transition()
-           .delay(function(d, i) {
-             return i * 40;
-           })
-           .attr('stroke', otherColor)
-           .attr('fill', otherColor);
-    });
 });
-
 
 // now for some titles/labels
 focus.append('text')
@@ -299,6 +232,50 @@ focus.append('text')
    .attr('text-anchor', 'middle')
    .attr('transform', 'translate(' + (w/2) + ',' + -margin.top/2 + ')')
    .text('Harry Potter Fan Fiction Publications Over Time');
+
+   d3.selectAll("input[name='houses']").on("change", updateColor)
+
+ function updateColor() {
+   var oldBase = baseColor;
+   var oldOther = otherColor;
+   switch(this.value) {
+     case 'Gryffindor':
+       baseColor = 'red';
+       otherColor = '#ffd700';
+       break;
+     case 'Hufflepuff':
+       baseColor = 'yellow';
+       otherColor = 'black';
+       break;
+     case 'Slytherin':
+       baseColor = '#c0c0c0';
+       otherColor = 'green';
+       break;
+     case 'Ravenclaw':
+       baseColor = 'blue';
+       otherColor = '#cd7f32'; //bronze
+       break;
+     default:
+       baseColor = 'red';
+       otherColor = '#ffd700';
+   }
+   var circles = focus.selectAll('circle')
+                      .data(cur_display)
+   circles.transition()
+          .delay(function(d, i) {
+            return i * .25;
+          })
+          .duration(100)
+          .attr('fill', baseColor);
+
+   var scars = focus.selectAll('.scar-group polygon')
+   scars.transition()
+        .delay(function(d, i) {
+          return i * 40;
+        })
+        .attr('stroke', otherColor)
+        .attr('fill', otherColor);
+ }
 
  // function to handle when someone mouses over an event
  function handleScarMouseOver(d, i) {
