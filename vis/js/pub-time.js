@@ -6,8 +6,11 @@ var w = 1200 - margin.left - margin.right;
 var h = 600 - margin.top - margin.bottom;
 
 // functions to parse/format the date
-var parseTime = d3.timeParse("%Y-%m-%d");
-var timeFormat = d3.timeFormat("%Y-%m-%d");
+//var parseTime = d3.timeParse("%Y-%m-%d");
+//var timeFormat = d3.timeFormat("%Y-%m-%d");
+var parseTime = d3.timeParse("%Y-%W");
+var timeFormat = d3.timeFormat("%Y-%W");
+var parseTimeline = d3.timeParse("%Y-%m-%d");
 var dateToLabel = d3.timeFormat("%m/%d/%y")
 
 // colors
@@ -63,7 +66,7 @@ function characterChanged() {
   var chosenChar = menu.property('value');
   cur_display = dates[chosenChar].values;
   xScale.domain(d3.extent(cur_display, function(d) {return d.key;}));
-  yScale.domain([0, d3.max(cur_display, function(d) {return d.value; })])
+  yScale.domain([0, d3.max(cur_display, function(d) {return d.value; })+10])
   updateScale(xScale, yScale);
   update();
 }
@@ -101,12 +104,24 @@ function zoomed() {
   update();
 }
 
+/*var area = d3.area()
+             .curve(d3.curveMonotoneX)
+             .x(function(d) { return xScale(d.key)})
+             .y1(h)
+             .y0(function(d) { return yScale(d.value);});*/
+
 function update() {
+  /*var path = focus.selectAll('path').data([cur_display])
+  console.log(path);
+  path.attr('d', area);
+  path.enter().append('path').attr('d', area);
+  path.exit().remove();*/
+
   var pointGroup = focus.selectAll('.point')
 
   var circles = pointGroup.selectAll('circle')
                      .data(cur_display);
-  console.log(circles);
+
   // exit
   circles.exit().remove();
   // enter
@@ -120,6 +135,7 @@ function update() {
   // update
   circles.merge(enterCircles)
                 .transition()
+                //.duration(2000)
                 .attr('cy', function(d) { return yScale(d.value); })
                 .attr('cx', function(d) { return xScale(d.key); });
 
@@ -183,7 +199,7 @@ d3.csv("data/char-pub.csv", function(data) {
 
   // set the domain for the scale
   xScale.domain(d3.extent(cur_display, function(d) {return d.key;}));
-  yScale.domain([0, d3.max(cur_display, function(d) {return d.value; })])
+  yScale.domain([0, d3.max(cur_display, function(d) {return d.value; })+10])
   init_xScale = xScale.copy();
   init_yScale = yScale.copy();
 
@@ -205,7 +221,7 @@ d3.csv("data/char-pub.csv", function(data) {
   // read in the timeline data and store as a dictionary for easy access
   d3.csv("data/timeline.csv", function(data) {
     data.forEach(function(d) {
-      d.date = parseTime(d.date);
+      d.date = parseTimeline(d.date);
     })
     // draw the timeline events as scars
     focus.selectAll('.point')
@@ -273,7 +289,7 @@ focus.append('text')
                       .data(cur_display)
    circles.transition()
           .delay(function(d, i) {
-            return i * .25;
+            return i * .5;
           })
           .duration(100)
           .attr('fill', baseColor);
@@ -281,7 +297,7 @@ focus.append('text')
    var scars = focus.selectAll('.scar-group polygon')
    scars.transition()
         .delay(function(d, i) {
-          return i * 40;
+          return i * 20;
         })
         .attr('stroke', otherColor)
         .attr('fill', otherColor);
@@ -349,7 +365,7 @@ focus.append('text')
                  .attr("x", xScale(d.key) - 20 )
                  .attr("y", yScale(d.value) - 5)
                  .attr('text-anchor', 'middle')
-                 .text(dateToLabel(d.key) + ": " + d.value);
+                 .text("Week of "+dateToLabel(d.key) + ": " + d.value);
 
    // get the bbox so we can place a background
    var bbox = text.node().getBBox();
