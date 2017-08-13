@@ -1,7 +1,7 @@
 
 
 // set dimensions for the svg
-var margin = {top: 50, right: 100, bottom: 100, left: 200};
+var margin = {top: 50, right: 150, bottom: 100, left: 200};
 var w = 1200 - margin.left - margin.right;
 var h = 600 - margin.top - margin.bottom;
 
@@ -67,17 +67,11 @@ function characterChanged() {
   cur_display = dates[chosenChar].values;
   xScale.domain(d3.extent(cur_display, function(d) {return d.key;}));
   yScale.domain([0, d3.max(cur_display, function(d) {return d.value; })+10])
-  updateScale(xScale, yScale);
+  updateAxes(xScale, yScale);
   update();
 }
 
-function updateScale(new_x, new_y) {
-  focus.select('.axis--x').call(xAxis.scale(new_x))
-                          .selectAll('text')
-                          .style('text-anchor', 'end')
-                          .attr('dx', '-.8em')
-                          .attr('dy', '.15em')
-                          .attr('transform', 'rotate(-65)');
+function updateAxes(new_x, new_y) {
   focus.select('.axis--y').call(yAxis.scale(new_y));
   init_xScale = new_x.copy();
   init_yScale = new_y.copy();
@@ -104,19 +98,7 @@ function zoomed() {
   update();
 }
 
-/*var area = d3.area()
-             .curve(d3.curveMonotoneX)
-             .x(function(d) { return xScale(d.key)})
-             .y1(h)
-             .y0(function(d) { return yScale(d.value);});*/
-
 function update() {
-  /*var path = focus.selectAll('path').data([cur_display])
-  console.log(path);
-  path.attr('d', area);
-  path.enter().append('path').attr('d', area);
-  path.exit().remove();*/
-
   var pointGroup = focus.selectAll('.point')
 
   var circles = pointGroup.selectAll('circle')
@@ -135,7 +117,6 @@ function update() {
   // update
   circles.merge(enterCircles)
                 .transition()
-                //.duration(2000)
                 .attr('cy', function(d) { return yScale(d.value); })
                 .attr('cx', function(d) { return xScale(d.key); });
 
@@ -174,11 +155,11 @@ var dates;
 var allData;
 
 // read in the data
-d3.csv("data/char-pub.csv", function(data) {
+d3.csv("data/char-pub-grouped.csv", function(data) {
   dates = d3.nest()
             .key(function(d) { return d.name})
-            .key(function(d) { return timeFormat(d.published * 1000); })
-            .rollup(function(v) { return v.length; })
+            .key(function(d) { return timeFormat(parseTimeline(d.published)); })
+            .rollup(function(v) { return d3.sum(v, function(d) { return d.count; }) })
             .entries(data);
 
   var character_list = [];
@@ -223,6 +204,7 @@ d3.csv("data/char-pub.csv", function(data) {
     data.forEach(function(d) {
       d.date = parseTimeline(d.date);
     })
+
     // draw the timeline events as scars
     focus.selectAll('.point')
          .selectAll('polygon')
@@ -297,7 +279,7 @@ focus.append('text')
    var scars = focus.selectAll('.scar-group polygon')
    scars.transition()
         .delay(function(d, i) {
-          return i * 20;
+          return i * 10;
         })
         .attr('stroke', otherColor)
         .attr('fill', otherColor);
