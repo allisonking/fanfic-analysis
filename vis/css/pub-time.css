@@ -3,6 +3,11 @@ body {
   font-size: 14px;
 }
 
+.right {
+  position: absolute;
+  left: 900px;
+}
+
 .axis {
   font-family: Helvetica, sans-serif;
   font-size: 14px;
