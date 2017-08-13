@@ -65,7 +65,7 @@ function yLockeded() {
 function characterChanged() {
   var chosenChar = menu.property('value');
   cur_display = dates[chosenChar].values;
-  xScale.domain(d3.extent(cur_display, function(d) {return d.key;}));
+  //xScale.domain(d3.extent(cur_display, function(d) {return d.key;}));
   yScale.domain([0, d3.max(cur_display, function(d) {return d.value; })+10])
   updateAxes(xScale, yScale);
   update();
@@ -155,7 +155,7 @@ var dates;
 var allData;
 
 // read in the data
-d3.csv("data/char-pub-grouped.csv", function(data) {
+d3.csv("data/d3/char-pub-grouped.csv", function(data) {
   dates = d3.nest()
             .key(function(d) { return d.name})
             .key(function(d) { return timeFormat(parseTimeline(d.published)); })
@@ -200,7 +200,7 @@ d3.csv("data/char-pub-grouped.csv", function(data) {
        .call(yAxis);
 
   // read in the timeline data and store as a dictionary for easy access
-  d3.csv("data/timeline.csv", function(data) {
+  d3.csv("data/d3/timeline.csv", function(data) {
     data.forEach(function(d) {
       d.date = parseTimeline(d.date);
     })
