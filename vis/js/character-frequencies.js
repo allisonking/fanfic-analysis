@@ -67,72 +67,57 @@ function updateAxes() {
 }
 var bars;
 function update() {
-  //var oldXScale = xScale.copy();
+  oldXScale = xScale.copy();
   updateDomains();
-  oldBars = focus.selectAll('.bar')
-              //.data(cur_display);
 
-  newBars = focus.selectAll('.bar')
-                 .data(cur_display)
+  var bar = focus.selectAll('.bar')
+                 .data(cur_display, function(d) { return d.name});
 
+  bar.transition()
+     .duration(2000)
+     .attr('y', function(d) { return yScale(d.percentage);})
+     .attr('height', function(d) { return h - yScale(d.percentage);})
+     .attr('x', function(d) { return xScale(d.name); })
+     .attr('fill', function(d) {
+       var difference = oldXScale(d.name) - xScale(d.name);
+       if (difference > 0) {
+         return 'orange';
+       }
+       else if (difference < 0) {
+         return 'darkred'
+       }
+       else {
+         return baseColor;
+       }
+       //console.log(oldXScale(d.name) - xScale(d.name));
+       return baseColor;
+     });
 
-  // update
-  var barUpdate = oldBars
-                      .transition()
-                      .duration(2000)
-                      //.attr('transform', function(d) { return 'translate('+(xScale(d.name)) +','+yScale(d.percentage)+')'; })
+  var barEnter = bar.enter()
+                    .append('rect')
+                    .on('mouseover', handleBarMouseOver)
+                    .on('mouseout', handleBarMouseOut)
+                    .attr('class','bar')
+                    //.attr('fill', baseColor)
+                    .attr('width', xScale.bandwidth())
+                    .attr('x', function(d) { return xScale(d.name); })
+                    .transition()
+                    .duration(2000)
+                    .attr('y', function(d) { return yScale(d.percentage); })
+                    .attr('height', function(d) { return h - yScale(d.percentage); })
+                    //.attr('x', function(d) { return xScale(d.name);})
+                    .attr('fill',otherColor);
 
+  bar.exit().transition()
+            .attr('fill-opacity', 0)
+            .remove();
 
-                      .attr('transform', function(d ,i) {
-                        var oldPos = d3.select(this).attr('x');
-                        console.log(d.name);
-                        //console.log(xScale(d.name));
-                        if (typeof xScale(oldData[i].name) != 'undefined') {
-                          var returnThis = 'translate(' + (xScale(oldData[i].name)-oldPos) + ',0)';
-                          //var returnThis = 'translate(' + (-xScale(d.name) + oldPos)+',0)';
-                          //var returnThis = 'translate(-16,0)';
-                          console.log(returnThis);
-                          return returnThis;
-                        }
-                        else { return '';}
-                      })
-                      //.attr('x', function(d, i) { return xScale(oldData[i].name); })
-                      .attr('y', function(d, i) { return yScale(oldData[i].percentage); })
-                      .attr('height', function(d, i) { return h - yScale(oldData[i].percentage); })
-                      .style('fill-opacity', function(d, i) {
-                        if (typeof xScale(oldData[i].name) == 'undefined') {
-                          return 0;
-                        } else {
-                          return 1;
-                        }
-                      });
-  // enter
-  var enterBars = newBars.enter()
-                      .append('rect')
-                      .attr('class','bar')
-                      .attr('fill', baseColor)
-                      .attr('width', xScale.bandwidth())
-                      .attr('x', function(d) { return xScale(d.name); })
-                      .attr('y', function(d) { return yScale(d.percentage); })
-                      .attr('height', function(d) { return h - yScale(d.percentage); })
-                      .on('mouseover', handleBarMouseOver)
-                      .on('mouseout', handleBarMouseOut);
-
-
-  /*newBars.merge(enterBars)
-      .transition()
-      .attr('x', function(d) { return xScale(d.name); })
-      .attr('y', function(d) { return yScale(d.percentage); })
-      .attr('height', function(d) { return h - yScale(d.percentage); })*/
-
-  // exit
-/*  bars.exit().transition()
-             //.attr('transform', function(d) { return 'translate('+h+',0)';})
-             .duration(2000)
-             .attr('fill-opacity', 0)
-             .remove();*/
+  /*var barEnter = bar.enter().append('rect')
+                            .attr('width',xScale.bandwidth())
+                            .attr('height', function(d) { return h - yScale(d.percentage); })*/
 
   updateAxes();
+
 
 }
 
@@ -162,7 +147,7 @@ d3.csv("data/d3/char_frequencies_canon_ff.csv", function(d) {
   updateDomains();
 
   focus.selectAll('.bar')
-       .data(cur_display)
+       .data(cur_display, function(d) { return d.name; })
        .enter()
        .append('rect')
        .attr('class','bar')
