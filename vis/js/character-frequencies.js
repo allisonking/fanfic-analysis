@@ -6,8 +6,13 @@ var w = 1200 - margin.left - margin.right;
 var h = 700 - margin.top - margin.bottom;
 
 // colors
-var baseColor = 'red';
-var otherColor = '#ffd700'; // gold
+color = {
+  'base': d3.rgb('rgb(185, 11, 11)'),
+  'other' : '#ffd700',
+  'increase' : 'orange',
+  'decrease' : 'darkred',
+  'new' : 'yellow'
+}
 
 // create the svg
 var svg = d3.select("body").append("svg")
@@ -26,7 +31,7 @@ d3.selectAll("input[name='frequency']").on("change", frequencyTypeChanged)
 
 var oldData;
 function frequencyTypeChanged() {
-  oldData = all_data.slice(0,50);
+  oldData = all_data.slice(0,num_characters);
   if (this.value == 'ff') {
     all_data.forEach(function(character) {
       character.percentage = character.fanfiction_percentage;
@@ -40,7 +45,7 @@ function frequencyTypeChanged() {
   all_data.sort(function(a, b) {
     return b.percentage - a.percentage;
   });
-  cur_display = all_data.slice(0,50);
+  cur_display = all_data.slice(0,num_characters);
   //updateDomains();
   update();
 }
@@ -78,20 +83,34 @@ function update() {
      .attr('y', function(d) { return yScale(d.percentage);})
      .attr('height', function(d) { return h - yScale(d.percentage);})
      .attr('x', function(d) { return xScale(d.name); })
-     .attr('fill', function(d) {
+     /*.attr('fill', function(d) {
        var difference = oldXScale(d.name) - xScale(d.name);
        if (difference > 0) {
-         return 'orange';
+         return color.increase;
        }
        else if (difference < 0) {
-         return 'darkred'
+         return color.decrease
        }
        else {
-         return baseColor;
+         return color.base;
        }
-       //console.log(oldXScale(d.name) - xScale(d.name));
-       return baseColor;
-     });
+     });*/
+     .attr('fill', function(d) {
+       var difference = oldXScale(d.name) - xScale(d.name);
+       var scale = difference / w * 6;
+       var color_test;
+       //console.log(scale);
+       if (scale < 0) {
+         color_test = color.base.darker(Math.abs(scale));
+       } else if (scale > 0){
+         color_test = color.base.brighter(Math.abs(scale));
+       }
+       else {
+         return color.base;
+       }
+       return color_test;
+     })
+
 
   var barEnter = bar.enter()
                     .append('rect')
@@ -105,16 +124,11 @@ function update() {
                     .duration(2000)
                     .attr('y', function(d) { return yScale(d.percentage); })
                     .attr('height', function(d) { return h - yScale(d.percentage); })
-                    //.attr('x', function(d) { return xScale(d.name);})
-                    .attr('fill',otherColor);
+                    .attr('fill',color.other);
 
   bar.exit().transition()
             .attr('fill-opacity', 0)
             .remove();
-
-  /*var barEnter = bar.enter().append('rect')
-                            .attr('width',xScale.bandwidth())
-                            .attr('height', function(d) { return h - yScale(d.percentage); })*/
 
   updateAxes();
 
@@ -131,6 +145,7 @@ focus.append('g')
 
 var cur_display;
 var all_data;
+var num_characters = 50;
 // read in the data
 d3.csv("data/d3/char_frequencies_canon_ff.csv", function(d) {
   d.canon_percentage = +d.canon_percentage;
@@ -142,7 +157,7 @@ d3.csv("data/d3/char_frequencies_canon_ff.csv", function(d) {
   data.forEach(function(character) {
     character.percentage = character.canon_percentage;
   });
-  cur_display = data.slice(0,50);
+  cur_display = data.slice(0,num_characters);
 
   updateDomains();
 
@@ -151,7 +166,20 @@ d3.csv("data/d3/char_frequencies_canon_ff.csv", function(d) {
        .enter()
        .append('rect')
        .attr('class','bar')
-       .attr('fill', baseColor)
+       .attr('fill', function(d, i) {
+         /*if (i*20 > 255) {
+           var new_i = i - 12;
+           console.log(i);
+           var color = 'rgb(' + (255 - new_i*20) + ',0,0)';
+         }
+         else {
+           var color = 'rgb('+ (255) + ',' + (255-i*20) +',0)';
+         }
+         console.log(color);
+         return color;*/
+         //return baseColor;
+         return color.base
+       })
        .attr('width', xScale.bandwidth())
        .attr('x', function(d) { return xScale(d.name); })
        .attr('y', function(d) { return yScale(d.percentage); })
@@ -195,28 +223,28 @@ focus.append('text')
 d3.selectAll("input[name='houses']").on("change", updateColor)
 
  function updateColor() {
-   var oldBase = baseColor;
-   var oldOther = otherColor;
+   var oldBase = color.base;
+   var oldOther = color.other;
    switch(this.value) {
      case 'Gryffindor':
-       baseColor = 'red';
-       otherColor = '#ffd700';
+       color.base = d3.rgb('rgb(185, 11, 11)');
+       color.other = '#ffd700';
        break;
      case 'Hufflepuff':
-       baseColor = 'yellow';
-       otherColor = 'black';
+       color.base = d3.rgb('rgb(200, 175, 41)');
+       color.other = 'black';
        break;
      case 'Slytherin':
-       baseColor = 'green';
-       otherColor = '#c0c0c0';
+       color.base = d3.rgb('rgb(34, 152, 35)');
+       color.other = '#c0c0c0';
        break;
      case 'Ravenclaw':
-       baseColor = 'blue';
-       otherColor = '#cd7f32'; //bronze
+       color.base = d3.rgb('rgb(28, 43, 179)');
+       color.other = '#cd7f32'; //bronze
        break;
      default:
-       baseColor = 'red';
-       otherColor = '#ffd700';
+       color.base = 'red';
+       color.other = '#ffd700';
    }
 
    focus.selectAll('.bar')
@@ -224,16 +252,39 @@ d3.selectAll("input[name='houses']").on("change", updateColor)
           .delay(function(d, i) {
             return i * 20;
           })
-          .attr('fill', baseColor);
+          .attr('fill', color.base);
 
  }
 
  function handleBarMouseOver(d, i) {
-   d3.select(this)
-     .attr('fill', otherColor)
+  /* d3.select(this)
+     .attr('fill', otherColor)*/
+     group = focus.append('g')
+                  .attr('id', 'id-name');
+
+     var text = group.append('text')
+                     .attr('x', xScale(d.name))
+                     .attr('y', yScale(d.percentage)-10)
+                     .attr('text-anchor', 'middle')
+                     .text(d.name);
+
+                     // get the bbox so we can place a background
+                     var bbox = text.node().getBBox();
+                     var bboxPadding = 5;
+
+                     // place the background
+                     var rect = group.insert('rect', ':first-child')
+                                   .attr('x', bbox.x - bboxPadding/2)
+                                   .attr('y', bbox.y - bboxPadding/2)
+                                   .attr('width', bbox.width + bboxPadding)
+                                   .attr('height', bbox.height + bboxPadding)
+                                   .attr('rx', 10)
+                                   .attr('ry', 10)
+                                   .attr('class', 'label-background');
  };
 
  function handleBarMouseOut(d, i) {
-   d3.select(this)
-     .attr('fill', baseColor)
+   /*d3.select(this)
+     .attr('fill', baseColor)*/
+     d3.select('#id-name').remove();
  };
