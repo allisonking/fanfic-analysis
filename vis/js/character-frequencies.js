@@ -9,9 +9,6 @@ var h = 700 - margin.top - margin.bottom;
 color = {
   'base': d3.rgb('rgb(185, 11, 11)'),
   'other' : '#ffd700',
-  'increase' : 'orange',
-  'decrease' : 'darkred',
-  'new' : 'yellow'
 }
 
 // create the svg
@@ -259,7 +256,7 @@ d3.selectAll("input[name='houses']").on("change", updateColor)
  function handleBarMouseOver(d, i) {
   /* d3.select(this)
      .attr('fill', otherColor)*/
-     group = focus.append('g')
+     var group = focus.append('g')
                   .attr('id', 'id-name');
 
      var text = group.append('text')
