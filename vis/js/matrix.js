@@ -35,18 +35,25 @@ function Matrix(options) {
 
     var max_value = 0;
 
+    // make a matrix out of the cooccurrency csv
     var matrix = [];
     characters.forEach(function(character, i) {
+      // add the character names to a list
       var name = character.key;
       character_names.push(name);
-      var sum = character.values[0][name];
+      // an extra field- clean that up
       delete character.values[0]['character'];
+      // this happens to give us the total number of ff's written about that character (diagonal in cooccurrency matrix)
+      var sum = character.values[0][name];
       var matrix_row = [];
       for (var key in character.values[0]) {
+        // get the percentage by dividing by the sum
         character.values[0][key] = character.values[0][key]/sum;
         var val = character.values[0][key];
+        // store the info in the matrix
         var info = {row_name: name, col_name: key, value : val}
         matrix_row.push(info);
+        // see what the max percentage is so our scales will be right
         if (val != 1 && val > max_value) {
           max_value = val;
         }
@@ -60,30 +67,14 @@ function Matrix(options) {
     yScale.domain(d3.range(num_characters));
     colorScale.domain([0, max_value]);
 
+    // add rows
     var row = focus.selectAll('.row')
                    .data(matrix)
                    .enter().append('g')
                    .attr('class', 'row')
                    .attr('transform', function(d, i) { return 'translate(0, ' + yScale(i) +')';})
 
-
-    /*var cell = row.selectAll('.cell')
-                    .data(function(d, i) {
-                      return d.values;
-                    })
-                    .enter().append('g')
-                    .attr('class', 'cell')
-                    .attr('transform', function(d, i) {
-                      return 'translate(' + yScale(i) +',0)';
-                    })
-                    .attr('fill', function(d, i) {
-                       var percent = d[labels[i]];
-                       if (percent == 1) {
-                         return 'grey';
-                       }
-                       return colorScale(percent);
-                    });*/
-
+    // add cells to each row
     var cell = row.selectAll('.cell')
                   .data(function(d) { return d; })
                   .enter().append('g')
@@ -91,12 +82,12 @@ function Matrix(options) {
                   .attr('transform', function(d, i) { return 'translate('+xScale(i)+',0)'})
                   .on('mouseover', handleCellMouseOver)
                   .on('mouseout', handleCellMouseOut);
-
     cell.append('rect')
         .attr('width', xScale.bandwidth())
         .attr('height', yScale.bandwidth())
         .style('stroke-width', 0);
 
+    // fill in the color using the percentage 
     row.selectAll('.cell')
        .data(function(d, i) {
          return matrix[i];
@@ -156,6 +147,7 @@ function Matrix(options) {
 
   });
 
+  /* function to add info about that particular cell as a text box when hovering */
   function handleCellMouseOver(d, i) {
     var row_idx = character_names.indexOf(d.row_name);
     var percentage = (d.value*100).toFixed(2);
