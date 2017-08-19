@@ -27,6 +27,11 @@ svg text{
   fill-opacity: .5;
 }
 
+.label-background-strong {
+  fill: white;
+  fill-opacity: .8;
+}
+
 .house-input {
   position: absolute;
   margin-left: 15px;
