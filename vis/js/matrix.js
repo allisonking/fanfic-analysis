@@ -4,7 +4,6 @@ function Matrix(options) {
   var margin = {top: 100, right: 100, bottom: 50, left: 100},
 	    width = 700,
 	    height = 700,
-	    data = options.data,
 	    container = options.container,
 	    startColor = options.start_color,
 	    endColor = options.end_color;
@@ -87,7 +86,7 @@ function Matrix(options) {
         .attr('height', yScale.bandwidth())
         .style('stroke-width', 0);
 
-    // fill in the color using the percentage 
+    // fill in the color using the percentage
     row.selectAll('.cell')
        .data(function(d, i) {
          return matrix[i];
