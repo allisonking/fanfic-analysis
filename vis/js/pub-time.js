@@ -1,4 +1,4 @@
-function PubTime() {
+function PubTime(options) {
   // set dimensions for the svg
   var margin = {top: 50, right: 150, bottom: 100, left: 200},
            w = 1200 - margin.left - margin.right,
@@ -13,9 +13,9 @@ function PubTime() {
   // colors
   var baseColor = 'red';
   var otherColor = '#ffd700'; // gold
-
+  
   // create the svg
-  var svg = d3.select("body").append("svg")
+  var svg = d3.select(options.container).append("svg")
               .attr('height', h + margin.top + margin.bottom)
               .attr('width', w + margin.left + margin.right)
 
