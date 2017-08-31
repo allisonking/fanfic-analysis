@@ -1,6 +1,6 @@
 function PubTime(options) {
   // set dimensions for the svg
-  var margin = {top: 50, right: 150, bottom: 100, left: 200},
+  var margin = {top: 0, right: 150, bottom: 100, left: 170},
            w = 1200 - margin.left - margin.right,
            h = 600 - margin.top - margin.bottom;
 
@@ -13,7 +13,7 @@ function PubTime(options) {
   // colors
   var baseColor = 'red';
   var otherColor = '#ffd700'; // gold
-  
+
   // create the svg
   var svg = d3.select(options.container).append("svg")
               .attr('height', h + margin.top + margin.bottom)
@@ -257,10 +257,10 @@ function PubTime(options) {
        .attr('text-anchor', 'middle')
        .attr('transform', 'translate(' + (w/2) + ',' + (h + margin.bottom * 3/4) +')')
        .text('Date');
-  focus.append('text')
+  /*focus.append('text')
        .attr('text-anchor', 'middle')
        .attr('transform', 'translate(' + (w/2) + ',' + -margin.top/2 + ')')
-       .text('Harry Potter Fan Fiction Publications Over Time');
+       .text('Harry Potter Fan Fiction Publications Over Time');*/
 
   // listen for if the user changes the color
   d3.selectAll("input[name='houses']").on("change", updateColor)
@@ -270,6 +270,7 @@ function PubTime(options) {
    * Then colors each of the circles those colors with some added transition
    */
   function updateColor() {
+    console.log(this.value);
     var oldBase = baseColor;
     var oldOther = otherColor;
     switch(this.value) {

@@ -1,7 +1,4 @@
-body {
-  font-family: Helvetica, sans-serif;
-  font-size: 14px;
-}
+
 
 .right {
   position: absolute;
@@ -32,9 +29,9 @@ svg text{
   fill-opacity: .8;
 }
 
-.house-input {
+.user-input {
   position: absolute;
-  margin-left: 15px;
+  /*margin-left: 15px;*/
 }
 
 .view {

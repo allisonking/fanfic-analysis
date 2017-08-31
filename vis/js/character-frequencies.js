@@ -1,9 +1,9 @@
 function CharacterFrequency(options) {
 
   // set dimensions for the svg
-  var margin = {top: 50, right: 150, bottom: 200, left: 200},
+  var margin = {top: 70, right: 150, bottom: 200, left: 100},
            w = 1200 - margin.left - margin.right,
-           h = 700 - margin.top - margin.bottom;
+           h = 600 - margin.top - margin.bottom;
 
   // colors
   color = {
@@ -198,10 +198,10 @@ function CharacterFrequency(options) {
   });
 
   // now for some titles/labels
-  focus.append('text')
+  /*focus.append('text')
        .attr('text-anchor', 'middle')
        .attr('transform', 'translate(' + -margin.left/2 +',' + (h/2) +')rotate(-90)')
-       .text('Percentage*');
+       .text('Percentage*');*/
   focus.append('text')
        .attr('text-anchor', 'middle')
        .attr('transform', 'translate(' + (w/2) + ',' + (h + margin.bottom * 3/4) +')')
@@ -212,7 +212,7 @@ function CharacterFrequency(options) {
        .text('Harry Potter Character Frequency');
 
   // listen for menu color changes
-  d3.selectAll("input[name='houses']").on("change", updateColor)
+  //d3.selectAll("input[name='houses']").on("change", updateColor)
 
   /**
    * Switch case statement to figure out which color to set the points to
