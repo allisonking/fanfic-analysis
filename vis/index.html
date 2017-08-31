@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>After All This Time?</title>
+  <!-- Import D3 -->
+  <!--<script src="https://d3js.org/d3.v4.min.js"></script>-->
+
+  <script src="js/d3.min.js"></script>
+
+  <!-- Bootstrap -->
+  <!--<link href="css/bootstrap.min.css" rel="stylesheet">-->
+  <link href="css/bootstrap_paper.min.css" rel="stylesheet">
+  <!--<link rel="stylesheet" type='text/css' href='css/boostrap.min.css'>-->
+  <link rel="stylesheet" type='text/css' href="css/pub-time.css">
+  <link rel="stylesheet" type='text/css' href="css/main.css">
+
+  <!-- Latest compiled and minified JavaScript -->
+<!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>-->
+
+</head>
+
+<body>
+
+  <div class='text-center'>
+    <h1> After All This Time? </h1>
+    <h2 class='lead'>Visualizing Harry Potter Fan Fiction: 1999-2017 </h2>
+  </div>
+  <div>
+  <h2> Introduction and Motivation </h2>
+  <p>When I was a kid, like many other kids out there, I really loved <i>Harry Potter</i>. Big deal, you're probably thinking so did half the world! I don't think my story is unique- I grew up waving a chopstick around as my wand, yelling <i>Expecto Patronum</i> out the window at passing cars, dressing up with my friends as each of Voldemort's horcruxes for midnight movie screenings, and building Quidditch hoops out of PVC pipes and hula hoops in the basement. I can't quite explain the extent to which I loved the series without going into fan fiction though, which I both read and wrote.
+  </p>
+  <p>There's a definite stigma around fan fiction, having gained a reputation for being written by teenage girls and often having, let's call it, mature content. Then there are the authors who reject the idea of fan fiction, who do not allow their fans to write fiction using their characters and worlds. Even now I feel a bit hesitant to admit that I participated in the fan fiction community. But I'm going to argue that fan fiction is important, that there is something very magical about fan fiction, whether or not it's about a boy wizard, and I'm going to do this through graphs!
+  </p>
+</div>
+
+  <h2>Background</h2>
+  <p>
+    I started by building a web scraper to scrape a website I spent a lot of my childhood years on- FanFiction.net. FanFiction.net launched in October of 1998 and the first <i>Harry Potter</i> fan fiction was published on it in 1999 (or at least the first one that is still around now). As I built my parser on a weekend in July of 2017, testing it out on the first page of fan fictions, I was mildly annoyed because the data kept changing- just in the one or two days where I was building my parser, it seemed like fan fictions were being published every hour- ten years after the last book had been published!</p>
+  <p>
+    Overall, I collected the metadata of 560,000 pieces of fan fiction. It took my scraper two full days to collect all of this data. Below are some visualizations I put together. They're all more or less interactive, so take your time walking through the graphs- I hope you enjoy!
+  </p>
+  <hr>
+  <h2 class='lead text-center'>Fan Fiction Publications Over Time</h2>
+
+  Why not show your house pride? <br>
+  <form class="user-input">
+
+    <input type="radio" name="houses" value="Gryffindor" checked> Gryffindor<br>
+    <input type="radio" name="houses" value="Hufflepuff"> Hufflepuff <br>
+    <input type="radio" name="houses" value="Ravenclaw"> Ravenclaw <br>
+    <input type="radio" name="houses" value="Slytherin"> Slytherin <br> <br>
+
+    <input type="checkbox" id="yLocked"> Lock y axis <br>
+    <input type="checkbox" id="xLocked"> Lock x axis <br> <br>
+
+  </form>
+
+  <p id="menu" class="pull-right"><br>Filter for: <select></select></p>
+  <div id="pub-time-chart"> </div>
+
+<script src="js/pub-time.js"></script>
+<script>PubTime({
+  container: '#pub-time-chart'
+});</script>
+<p>
+  This graph was meant to capture the number of fan fictions published on the site over time and to see how the spikes correspond to significant events in Harry Potter fandom history. This includes when each book was released, when each movie premiered, as well as small other tidbits- hover over the scars for information on these events.
+</p>
+<p>
+  Right away, you'll notice two large spikes. If you hover on the scars near those spikes, you'll see that they belong to the date the last book was released, as well as to the date the last movie was released. The other spikes typically correspond to other book/movie releases. But that's not always the case, and more than just fan fiction overall, I wanted to split this up by character to see when it was fans reacted to certain characters- when it was that they decided they cared for the characters so much that they would take their lives into their own hands.
+</p>
+<p>
+  The graph starts automatically filtered for Harry. In an ideal world, all of the characters would be in the drop down but it turned out the dataset was simply too large, causing lengthy load times, and so I chose certain characters I thought could be interesting. For instance, try going from Harry to Draco Malfoy. It's important to note that the Y-Axis scale changes automatically. You'll see that when moving to Malfoy, the spike near when Harry Potter and the Half Blood Prince was published goes up, indicating a surge of interest in Malfoy after the 6th book was published. Also interestingly, if you then shift to Neville, you'll see that fan fiction written about our favorite snake killer was sparse compared to that written about Harry, until the 7th book, but more so, the 7th movie. What happened there? I'll just leave <a href="http://attitude.co.uk/harry-potters-matthew-lewis-is-attitudes-new-cover-guy/">this article</a> here.
+</p>
+<p>
+  While most characters' spiked after the 7th book and movie, Sirius is a notable exception, spiking after book/movie five due to that thing that happens to him. One more interesting observation can be found when filtering for Snape. The spikes are all pretty expected except for the last one in January of 2016, long after the books and movies ended. It turns out this spike belongs to the day Alan Rickman, the actor behind Snape, passed away. We begin to see now a blurred line between fiction and reality- it is understandable that Sirius fan fiction spiked after Sirius the character died in the books, but for Snape fan fiction to rise after the real life actor passed away is something different. Perhaps it shows the power Alan Rickman's acting, to thoroughly blur the lines between himself and the character he played- or maybe it shows the potential healing behind fan fiction- the ability to turn to a fandom that is also grieving and turn that grief into art.
+</p>
+<hr>
+<h2 class='lead text-center'>Canon Popularity vs Fan Fiction Popularity</h2>
+<form class='user-input'>
+  <input type='radio' name='frequency' value='canon' checked> Canon <br>
+  <input type='radio' name='frequency' value='ff'> Fan Fiction <br><br>
+</form>
+<div id='frequency-chart' class='text-center'></div>
+
+<script src="js/character-frequencies.js"></script>
+<script>
+CharacterFrequency({
+  container: '#frequency-chart'
+});
+</script>
+<p>
+  This graph is a bit simpler. I attempted to rank the 'popularity' of characters in canon vs fan fiction. For canon, that meant the number of times that character was mentioned in the series. I got that data from <a href="http://harrypotter.answers.wikia.com/wiki/Top_200_most_named_harry_potter_characters_s">here</a>. For fan fiction, each fan fiction can have a few characters tagged as the main characters and so I tallied those up. Then I normalized each value by dividing by percentage of total mentions or percentage of total tags to get the numbers you see above.
+</p>
+<p>
+  Toggle through the radio buttons to see how character popularity changes between canon and fan fiction. Harry stays the same, but everybody else either slides to the left, right, or completely goes away. Darker colors indicate that character was mentioned fewer times and lighter colors mean that character was mentioned more. For example, when toggling to 'Fan Fiction', you can see that James Potter's bar becomes almost pink, indicating he is a lot more popular in fan fiction than in canon. The yellow indicates a completely new character- one that wasn't in the top 50 previously but who broke it now- Lily Evans Potter, for example, as well as OC, or original character- a character that would only appear in fan fiction.
+</p>
+<p>
+  There are a lot of neat observations to be made here- I recommend toggling a few times and following the bars of characters of interest. One third of the characters who broke the top 50 in fan fiction are from the next generation- characters like Harry Potter's children who are only mentioned once or twice in the epilogue but who have an abundance of fan fiction written about them. Some of the complaints authors have with fan fiction is that it does not encourage creativity- the characters and the world were already created by someone else- but what about Scorpius Malfoy or Rose Weasley, who hardly have any character to build off of? Writers seem to be drawn to them as much as to the characters with established traits and personalities. Is this so different than aspiring musicians who perform covers of songs?
+</p>
+<hr>
+<h2 class='lead text-center'>Character Co-Occurrency Matrix</h2>
+<div id='matrix-container' class='text-center'></div>
+
+<script src="js/matrix.js"></script>
+<script>
+Matrix({
+  container: '#matrix-container',
+  start_color : 'white',
+  end_color : '#054169'
+})
+</script>
+</body>
+</html>
