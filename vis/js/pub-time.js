@@ -137,24 +137,21 @@ function PubTime(options) {
     var scars = focus.selectAll('.scar-group')
     scars.enter()
          .merge(scars)
-         .attr('transform', function(d) {
-           var x = xScale(d.date);
-           var y = h/6;
-           return 'translate(' + x + ',' + y + ')';
+         .attr('x', function(d) {
+           return xScale(d.date);
+         })
+         .attr('y', function(d) {
+           var y;
+           if(d.type=='book') {
+             y=h/18;
+           } else if (d.type=='movie') {
+             y=h/9;
+           } else {
+             y=h/6;
+           }
+           return y;
          });
   }
-
-  // lightning bolt polygon. this is drawn at (0,0) and can be transformed around
-  var scar = [{"x":-6, "y":0},
-              {"x":8,"y":0},
-              {"x":-6,"y":11},
-              {"x":2,"y":1},
-              {"x":-6, "y":1},
-              {"x":3,"y":-7}, ];
-  // transform it for easy access by the svg later
-  var newScar = scar.map(function(d) {
-    return [d.x, d.y];
-  });
 
   // the axes
   var xAxis = d3.axisBottom(xScale)
@@ -226,20 +223,20 @@ function PubTime(options) {
         d.date = parseTimeline(d.date);
       })
 
-      // draw the timeline events as scars
       focus.selectAll('.point')
-           .selectAll('polygon')
+           .selectAll('.scar-group')
            .data(data)
-           .enter()
-           .append('g')
+           .enter().append('text')
            .attr('class', 'scar-group')
-           .append('polygon')
-           .attr('points', function(d) {
-             return [newScar].join(" ");
-           })
-           .attr('stroke', otherColor)
+           .style('font-family', 'FontAwesome')
            .attr('fill', otherColor)
-           .attr('stroke-width', 2)
+           .style('font-size', '20px')
+           .attr('text-anchor', 'middle')
+           .text(function(d) {
+             if(d.type=='book') return '\uf02d';
+             if (d.type=='movie') return '\uf008';
+             else return '\uf0e7';
+           })
            .on('mouseover', handleScarMouseOver)
            .on('mouseout', handleScarMouseOut);
 
@@ -303,19 +300,19 @@ function PubTime(options) {
            .duration(100)
            .attr('fill', baseColor);
 
-    var scars = focus.selectAll('.scar-group polygon')
+    var scars = focus.selectAll('.scar-group')
     scars.transition()
          .delay(function(d, i) {
            return i * 10;
          })
-         .attr('stroke', otherColor)
          .attr('fill', otherColor);
  }
 
  // function to handle when someone mouses over an event
  function handleScarMouseOver(d, i) {
-   d3.select(this)
-     .attr('transform', 'scale(1.5)');
+  // make bigger on hover
+  d3.select(this)
+    .style('font-size', '30px');
 
    var group = focus.append('g')
                  .attr('id', 'id-'+timeFormat(d.date));
@@ -354,7 +351,7 @@ function PubTime(options) {
  // function to handle when someone mouses out of an event
  function handleScarMouseOut(d, i) {
    d3.select(this)
-     .attr('transform', '');
+     .style('font-size', '20px');
 
    d3.select('#id-'+timeFormat(d.date)).remove();
  }
