@@ -153,30 +153,75 @@ function Matrix(options) {
     var group = focus.append('g')
                  .attr('id', 'id-name');
 
-    var text = group.append('text')
-                    .attr('x', xScale(i))
-                    .attr('y', yScale(row_idx)-10)
-                    .attr('text-anchor', 'middle')
-                    .text(d.row_name + " + " + d.col_name + ": " + percentage+"%");
+    // since we know all the text will look about the same, can hard code the word wrap
+    group.append('text')
+         .attr('x', xScale(i))
+         .attr('y', yScale(row_idx)-20)
+         .attr('text-anchor', 'middle')
+         .text(function() {
+           var t = 'Of '+ d.row_name + ' fan fictions, ';
+           return t;
+         });
+    group.append('text')
+         .attr('x', xScale(i))
+         .attr('y', yScale(row_idx)-8)
+         .attr('text-anchor','middle')
+         .text(function(d2) {
+           var t = percentage + "% feature " + d.col_name;
+           return t;
+         });
 
-                    // get the bbox so we can place a background
-                    var bbox = text.node().getBBox();
-                    var bboxPadding = 5;
+    // get the bbox so we can place a background that makes text easier to see
+    var bbox = group.node().getBBox();
+    var bboxPadding = 5;
 
-                    // place the background
-                    var rect = group.insert('rect', ':first-child')
-                                  .attr('x', bbox.x - bboxPadding/2)
-                                  .attr('y', bbox.y - bboxPadding/2)
-                                  .attr('width', bbox.width + bboxPadding)
-                                  .attr('height', bbox.height + bboxPadding)
-                                  .attr('rx', 10)
-                                  .attr('ry', 10)
-                                  .attr('class', 'label-background-strong');
+    // place the background
+    var rect = group.insert('rect', ':first-child')
+                    .attr('x', bbox.x - bboxPadding/2)
+                    .attr('y', bbox.y - bboxPadding/2)
+                    .attr('width', bbox.width + bboxPadding)
+                    .attr('height', bbox.height + bboxPadding)
+                    .attr('rx', 10)
+                    .attr('ry', 10)
+                    .attr('class', 'label-background-strong');
   };
 
   function handleCellMouseOut(d, i) {
     d3.select('#id-name').remove();
   }
+
+  function wrap(text, width) {
+    text.each(function () {
+        var text = d3.select(this),
+            words = "Foo is not a long word".split(/\s+/).reverse(),
+            word,
+            line = [],
+            lineNumber = 0,
+            lineHeight = 1.1, // ems
+            x = text.attr("x"),
+            y = text.attr("y"),
+            dy = 0, //parseFloat(text.attr("dy")),
+            tspan = text.text(null)
+                        .append("tspan")
+                        .attr("x", x)
+                        .attr("y", y)
+                        .attr("dy", dy + "em");
+        while (word = words.pop()) {
+            line.push(word);
+            tspan.text(line.join(" "));
+            if (tspan.node().getComputedTextLength() > width) {
+                line.pop();
+                tspan.text(line.join(" "));
+                line = [word];
+                tspan = text.append("tspan")
+                            .attr("x", x)
+                            .attr("y", y)
+                            .attr("dy", ++lineNumber * lineHeight + dy + "em")
+                            .text(word);
+            }
+        }
+    });
+}
 
 
 }
