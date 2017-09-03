@@ -32,13 +32,15 @@ function CharacterFrequency(options) {
    */
   function frequencyTypeChanged() {
     if (this.value == 'ff') {
-      all_data.forEach(function(character) {
+      all_data.forEach(function(character, i) {
         character.percentage = character.fanfiction_percentage;
+        character.last_rank = i;
       });
     }
     else {
-      all_data.forEach(function(character) {
+      all_data.forEach(function(character, i) {
         character.percentage = character.canon_percentage;
+        character.last_rank = i;
       });
     }
     all_data.sort(function(a, b) {
@@ -58,7 +60,7 @@ function CharacterFrequency(options) {
   }
 
   /**
-   * Resets the axes (normally called after domains have been updated
+   * Resets the axes (normally called after domains have been updated)
    */
   function updateAxes() {
     focus.select('.axis--y').call(d3.axisLeft(yScale).ticks(10,'%'))
@@ -83,7 +85,9 @@ function CharacterFrequency(options) {
 
     // bind the new data
     var bar = focus.selectAll('.bar')
-                   .data(cur_display, function(d) { return d.name});
+                   .data(cur_display, function(d) { return d.name})
+                   .on('mouseover', handleBarMouseOver)
+                   .on('mouseout', handleBarMouseOut);
 
     // update- calculate if character increased or decreased in frequency and display color
     bar.transition()
@@ -118,7 +122,7 @@ function CharacterFrequency(options) {
                       .duration(2000)
                       .attr('y', function(d) { return yScale(d.percentage); })
                       .attr('height', function(d) { return h - yScale(d.percentage); })
-                      .attr('fill',color.other);
+                      .attr('fill',color.other)
 
     // goodbye characters not in the new top 50!
     bar.exit().transition()
@@ -154,7 +158,7 @@ function CharacterFrequency(options) {
     all_data = data;
 
     // start with canon- store in new variable 'percentage'
-    data.forEach(function(character) {
+    data.forEach(function(character, i) {
       character.percentage = character.canon_percentage;
     });
 
@@ -263,7 +267,20 @@ function CharacterFrequency(options) {
                      .attr('x', xScale(d.name))
                      .attr('y', yScale(d.percentage)-10)
                      .attr('text-anchor', 'middle')
-                     .text(d.name);
+                     .text(function() {
+                       if (typeof d.last_rank != 'undefined') {
+                         var old_rank = +d.last_rank + 1;
+                         if (old_rank > 200) {
+                           old_rank = ">200";
+                         }
+                         var new_rank = i + 1
+                         var t = d.name + ": rank " + old_rank + " to " + new_rank;
+                         return t;
+                       }
+                       else {
+                         return d.name
+                       }
+                     });
 
                      // get the bbox so we can place a background
                      var bbox = text.node().getBBox();
