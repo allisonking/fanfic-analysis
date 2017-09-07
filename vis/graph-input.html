@@ -51,18 +51,22 @@ d3.json("data/d3/character_nodes.json", function(error, graph) {
   if (error) throw error;
 
   var nodes = graph.nodes,
+      num_characters = nodes.length;
       intermediates = graph.intermediates,
       nodeById = d3.map(nodes, function(d) { return d.id; }),
       nodeByIndex = d3.map(intermediates, function(d) { return d.index;})
       links = graph.links,
-      bilinks = [];
-  var min_link_val = 200000;
-  var max_link_val = 0;
+      bilinks = [],
+      min_link_val = 200000,
+      max_link_val = 0;
+
   links.forEach(function(link, index) {
     var s = link.source = nodeById.get(link.source),
         t = link.target = nodeById.get(link.target),
         v = +link.value,
-        i = nodeByIndex.get(index + 29);
+        // intermediate will now be read in as opposed to empty
+        i = nodeByIndex.get(index + num_characters);
+    // while we're iterating, get the min and max values for our scale
     if (v < min_link_val) {
       min_link_val = v;
     }
@@ -83,7 +87,12 @@ d3.json("data/d3/character_nodes.json", function(error, graph) {
       .attr('stroke-width', function(d) {
         return linkScale(d[3]);
       })
-      .style('stroke', 'grey');
+      .style('stroke', 'grey')
+      .on('mouseover', handleLinkMouseOver)
+      .on('mouseout', handleLinkMouseOut);
+
+  link.append('svg:title')
+      .text(function(d){ return d[3]; });
 
   var node = svg.selectAll('.node')
                 .data(nodes.filter(function(d) { return d.id; }))
@@ -144,7 +153,6 @@ function positionNode(d) {
 }
 
 function dragstarted(d) {
-  handleNodeMouseOut(d);
   if (!d3.event.active) simulation.alphaTarget(0.3).restart();
   d.fx = d.x, d.fy = d.y;
 }
@@ -165,7 +173,7 @@ function handleNodeMouseOver(d) {
 
   d3.selectAll('.link')
     .filter(function(link) {
-      return link[0].id == d.id || link[2].id == d.id
+      return link[0].id == d.id || link[2].id == d.id;
     })
     .style('stroke', 'rgb(50, 118, 231)');
 }
@@ -178,6 +186,27 @@ function handleNodeMouseOut(d) {
   d3.selectAll('.link')
     .style('stroke', 'grey');
 
+}
+
+function handleLinkMouseOver(d) {
+  d3.select(this)
+    .style('stroke', 'rgb(50, 118, 231)')
+
+  d3.selectAll('.node')
+     .filter(function(node) {
+       return node.id == d[0].id || node.id == d[2].id;
+     })
+     .selectAll('circle')
+     .style('stroke-width', 5);
+}
+
+function handleLinkMouseOut(d) {
+  d3.select(this)
+    .style('stroke', 'grey');
+
+  d3.selectAll('.node')
+     .selectAll('circle')
+     .style('stroke-width', 2);
 }
 
 </script>
