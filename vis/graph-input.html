@@ -2,9 +2,14 @@
 <meta charset="utf-8">
 <style>
 
-.node {
+/*.node {
   stroke: #fff;
   stroke-width: 1.5px;
+}*/
+
+.label-background {
+  fill: white;
+  fill-opacity: .5;
 }
 
 .link {
@@ -12,28 +17,15 @@
   stroke: #bbb;
 }
 
+.node-label {
+  color: black;
+}
+
 </style>
 <svg width="960" height="600"></svg>
-<button id='printbutton'> print</button>
 <script src='js/d3.min.js'></script>
 <!--<script src="https://d3js.org/d3.v4.min.js"></script>-->
 <script>
-d3.select('#printbutton').on('click', printInfo);
-
-function printInfo(){
-  var nodeInfo = [];
-  var interInfo = [];
-  d3.selectAll('.node')
-    .filter(function(d){
-      nodeInfo.push(d);
-    })
-  d3.selectAll('.intermediate')
-    .filter(function(d){
-      interInfo.push(d);
-    })
-  console.log(nodeInfo);
-  console.log(interInfo);
-}
 
 var svg = d3.select("svg"),
     width = +svg.attr("width"),
@@ -42,7 +34,7 @@ var svg = d3.select("svg"),
 var colorMap = {
   'Gryffindor' : 'red',
   'Slytherin' : 'green',
-  'Hufflepuff' : 'yellow',
+  'Hufflepuff' : '#ffd700',
   'Ravenclaw' : 'blue',
   'other' : 'grey'
 }
@@ -93,17 +85,29 @@ d3.json("data/d3/character_nodes.json", function(error, graph) {
       })
       .style('stroke', 'grey');
 
-  var node = svg.selectAll(".node")
-    .data(nodes.filter(function(d) { return d.id; }))
-    .enter().append("circle")
-      .attr("class", "node")
-      .attr("r", 20)
-      .attr("fill", function(d) { return colorMap[d.house]; })
-      .on('mouseover', handleNodeMouseOver)
-      .on('mouseout', handleNodeMouseOut)
-      .call(d3.drag()
-          .on("start", dragstarted)
-          .on("drag", dragged));
+  var node = svg.selectAll('.node')
+                .data(nodes.filter(function(d) { return d.id; }))
+                .enter().append('g')
+                .attr('class', 'node')
+                .on('mouseover', handleNodeMouseOver)
+                .on('mouseout', handleNodeMouseOut)
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged));
+
+  node.append('circle')
+      .attr('r', 20)
+      .style("stroke", function(d) { return colorMap[d.house]; })
+      .style('stroke-width', 2)
+      .attr('fill', 'white');
+
+
+  node.append('text')
+      .attr('class', 'node-label')
+      .attr('fill', 'black')
+      .attr('y', function(d) { return '.35em'})
+      .attr('text-anchor', 'middle')
+      .text(function(d) { return getInitials(d.id)});
 
   simulation
       .nodes(nodes)
@@ -119,6 +123,16 @@ d3.json("data/d3/character_nodes.json", function(error, graph) {
   }
 });
 
+function getInitials(name) {
+  if(name == 'OC') return name;
+  var initials = "";
+  var split = name.split(" ");
+  split.forEach(function(partial_name) {
+    initials = initials + partial_name[0];
+  })
+  return initials;
+}
+
 function positionLink(d) {
   return "M" + d[0].x + "," + d[0].y
        + "S" + d[1].x + "," + d[1].y
@@ -130,7 +144,6 @@ function positionNode(d) {
 }
 
 function dragstarted(d) {
-  console.log(d);
   handleNodeMouseOut(d);
   if (!d3.event.active) simulation.alphaTarget(0.3).restart();
   d.fx = d.x, d.fy = d.y;
@@ -146,59 +159,25 @@ function dragended(d) {
 }
 
 function handleNodeMouseOver(d) {
-  var thisNodeId = getNodeId(d.id);
-  var hoverInfo = svg.append('g')
-                     .attr('id', 'hover-info');
-  hoverInfo.append('text')
-     .attr('id', thisNodeId)
-     .attr('x', d.x)
-     .attr('y', d.y - 10)
-     .attr('text-anchor', 'middle')
-     .text(d.id);
+  d3.select(this)
+    .select('text')
+    .text(d.id);
 
-  var targets = []
-  var thisNodesLinks = d3.selectAll('.link')
-                         .filter(function(link) {
-                           if (link[0].id == d.id ) {//|| link[2].id == d.id) {
-                             targets.push(link[2].id);
-                             return true;
-                           } else if (link[2].id == d.id) {
-                             targets.push(link[0].id);
-                             return true;
-                           }
-                           return false;
-                         })
-                         .style('stroke', 'rgb(50, 118, 231)');
-
-  var nodePositions = [];
-  var targetNodes = d3.selectAll('.node')
-                      .filter(function(n) {
-                        if (targets.indexOf(n.id) > -1) {
-                          nodePositions.push({name: n.id, x: n.x, y: n.y});
-                          return true;
-                        }
-                        return false;
-                      });
-
-  hoverInfo.selectAll('.target-text')
-           .data(nodePositions)
-           .enter().append('text')
-           .attr('class', 'target-text')
-           .attr('x', function(n) { return n.x})
-           .attr('y', function(n) { return n.y - 10})
-           .attr('text-anchor', 'middle')
-           .text(function(n) { return n.name });
+  d3.selectAll('.link')
+    .filter(function(link) {
+      return link[0].id == d.id || link[2].id == d.id
+    })
+    .style('stroke', 'rgb(50, 118, 231)');
 }
 
 function handleNodeMouseOut(d) {
-  d3.select('#hover-info').remove();
+  d3.select(this)
+    .select('text')
+    .text(getInitials(d.id));
+
   d3.selectAll('.link')
     .style('stroke', 'grey');
 
-}
-
-function getNodeId(name) {
-  return 'node' + name.replace(/ /g, '').replace(/\./g, '');
 }
 
 </script>
