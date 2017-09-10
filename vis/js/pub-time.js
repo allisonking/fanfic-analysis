@@ -267,7 +267,6 @@ function PubTime(options) {
    * Then colors each of the circles those colors with some added transition
    */
   function updateColor() {
-    console.log(this.value);
     var oldBase = baseColor;
     var oldOther = otherColor;
     switch(this.value) {
