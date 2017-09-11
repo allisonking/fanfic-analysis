@@ -13,14 +13,18 @@
 
 <body>
 
+  Why not show your house pride? <br>
   <form class="house-input">
+
+    <input type="radio" name="houses" value="Gryffindor" checked>Gryffindor<br>
+    <input type="radio" name="houses" value="Hufflepuff">Hufflepuff <br>
+    <input type="radio" name="houses" value="Ravenclaw">Ravenclaw <br>
+    <input type="radio" name="houses" value="Slytherin">Slytherin <br> <br>
 
     <input type='radio' name='frequency' value='canon' checked> Canon <br>
     <input type='radio' name='frequency' value='ff'> Fan Fiction <br><br>
 
   </form>
-
-  <div id="legend"> </div>
 
   <div id='frequency-chart'></div>
 
@@ -28,7 +32,7 @@
   <script>
   CharacterFrequency({
     container: '#frequency-chart',
-    gender: false
+    gender: true
   });
   </script>
 </body>

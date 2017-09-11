@@ -1,15 +1,21 @@
 function CharacterFrequency(options) {
-
+  var useGender = options.gender;
   // set dimensions for the svg
   var margin = {top: 70, right: 150, bottom: 200, left: 100},
            w = 1200 - margin.left - margin.right,
            h = 600 - margin.top - margin.bottom;
 
   // colors
-  color = {
+  var color = {
     'base': d3.rgb('rgb(185, 11, 11)'),
     'other' : '#ffd700',
   }
+
+  var genderMap = {
+    'M' : color.base,
+    'F' : color.other,
+    'N' : 'grey'
+  };
 
   // create the svg
   var svg = d3.select(options.container).append("svg")
@@ -96,18 +102,20 @@ function CharacterFrequency(options) {
        .attr('height', function(d) { return h - yScale(d.percentage);})
        .attr('x', function(d) { return xScale(d.name); })
        .attr('fill', function(d) {
-         var difference = oldXScale(d.name) - xScale(d.name);
-         var scale = difference / w * 6;
-         var color_test;
-         if (scale < 0) {
-           color_test = color.base.darker(Math.abs(scale));
-         } else if (scale > 0){
-           color_test = color.base.brighter(Math.abs(scale));
-         }
-         else {
-           return color.base;
-         }
-         return color_test;
+         if (!useGender) {
+           var difference = oldXScale(d.name) - xScale(d.name);
+           var scale = difference / w * 6;
+           var new_color;
+           if (scale < 0) {
+             new_color = color.base.darker(Math.abs(scale));
+           } else if (scale > 0){
+             new_color = color.base.brighter(Math.abs(scale));
+           }
+           else {
+             return color.base;
+           }
+           return new_color;
+         } else return genderMap[d.gender];
        });
 
     // enter- all new characters have a certain color
@@ -122,9 +130,12 @@ function CharacterFrequency(options) {
                       .duration(2000)
                       .attr('y', function(d) { return yScale(d.percentage); })
                       .attr('height', function(d) { return h - yScale(d.percentage); })
-                      .attr('fill',color.other)
+                      .attr('fill', function(d) {
+                        if (!useGender) return color.other;
+                        else return genderMap[d.gender];
+                      });
 
-    // goodbye characters not in the new top 50!
+    // goodbye characters not in the new top num_characters!
     bar.exit().transition()
               .attr('fill-opacity', 0)
               .remove();
@@ -140,10 +151,47 @@ function CharacterFrequency(options) {
   focus.append('g')
        .attr('class', 'axis axis--y')
 
-  var cur_display;
-  var all_data;
   // this variable could be changed to show a different number of characters
   var num_characters = 50;
+
+  var legend_values = [
+    {color : genderMap['M'], value : 'male'},
+    {color : genderMap['F'], value : 'female'},
+    {color : genderMap['N'], value : 'other'},
+  ]
+
+  if (!useGender) {
+    legend_values = [
+      {color : color.base.darker(1), value : 'lower ranking' },
+      {color : color.base.brighter(2), value : 'higher ranking' },
+      {color : color.other, value : 'not in previous top ' + num_characters },
+    ]
+  }
+
+  var legend = focus.append('g')
+                    .attr('transform', 'translate(' + (w-200) + ',0)');
+
+  var key = legend.selectAll('g')
+                    .data(legend_values)
+                    .enter().append('g')
+                    .attr('transform', function(d, i) {
+                      return 'translate(0,' +(i*15)+ ')'
+                    });
+
+  key.append('rect')
+        .attr('width', '10px')
+        .attr('height', '10px')
+        .attr('fill', function(d) { return d.color; });
+
+  key.append('text')
+     .attr('x', '15px')
+     .attr('y', '10px')
+     .text(function(d) { return d.value; });
+
+
+  var cur_display;
+  var all_data;
+
 
   // read in the data
   d3.csv("data/d3/char_frequencies_canon_ff.csv", function(d) {
@@ -174,7 +222,8 @@ function CharacterFrequency(options) {
          .append('rect')
          .attr('class','bar')
          .attr('fill', function(d, i) {
-           return color.base
+           if (!useGender) return color.base;
+           else return genderMap[d.gender];
          })
          .attr('width', xScale.bandwidth())
          .attr('x', function(d) { return xScale(d.name); })

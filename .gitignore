@@ -12,6 +12,7 @@ gists/
 
 # ignore scraped data
 data/
+vis/data
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
