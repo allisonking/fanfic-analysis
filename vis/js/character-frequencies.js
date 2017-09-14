@@ -30,7 +30,7 @@ function CharacterFrequency(options) {
                  .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
   // listen for radio button change
-  d3.selectAll("input[name='frequency']").on("change", frequencyTypeChanged)
+  d3.selectAll("input[name="+ options.input +"]").on("change", frequencyTypeChanged)
 
   /**
    * Handles when the user chooses 'canon' or 'fan fiction'. Called by radio button change.

@@ -11,15 +11,11 @@
   <script src="js/d3.min.js"></script>
 
   <!-- Bootstrap -->
-  <!--<link href="css/bootstrap.min.css" rel="stylesheet">-->
   <link href="css/bootstrap_paper.min.css" rel="stylesheet">
-  <!--<link rel="stylesheet" type='text/css' href='css/boostrap.min.css'>-->
+
   <link rel="stylesheet" type='text/css' href="css/pub-time.css">
   <link rel="stylesheet" type='text/css' href="css/main.css">
   <script src="https://use.fontawesome.com/5b01732ae2.js"></script>
-
-  <!-- Latest compiled and minified JavaScript -->
-<!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>-->
 
 </head>
 
@@ -89,7 +85,9 @@
 <script src="js/character-frequencies.js"></script>
 <script>
 CharacterFrequency({
-  container: '#frequency-chart'
+  container: '#frequency-chart',
+  gender: false,
+  input: 'frequency'
 });
 </script>
 <p>
@@ -100,6 +98,26 @@ CharacterFrequency({
 </p>
 <p>
   There are a lot of neat observations to be made here- I recommend toggling a few times and following the bars of characters of interest. One third of the characters who broke the top 50 in fan fiction are from the next generation- characters like Harry Potter's children who are only mentioned once or twice in the epilogue but who have an abundance of fan fiction written about them. Some of the complaints authors have with fan fiction is that it does not encourage creativity- the characters and the world were already created by someone else- but what about Scorpius Malfoy or Rose Weasley, who hardly have any character to build off of? Writers seem to be drawn to them as much as to the characters with established traits and personalities. Is this so different than aspiring musicians who perform covers of songs?
+</p>
+<hr>
+<h2 class='lead text-center'>Character Genders vs Fan Fiction Genders</h2>
+<form class='user-input'>
+  <input type='radio' name='gender' value='canon' checked> Canon <br>
+  <input type='radio' name='gender' value='ff'> Fan Fiction <br><br>
+</form>
+<div id='gender-chart' class='text-center'></div>
+<script>
+CharacterFrequency({
+  container: '#gender-chart',
+  gender: true,
+  input: 'gender'
+});
+</script>
+<p>
+  It's pretty hard to talk about fan fiction without talking about gender. Neither the gender nor age of fan fiction writers are normally disclosed. However, <a href="http://ffnresearch.blogspot.com/2011/03/fan-fiction-demographics-in-2010-age.html">Fan Fiction Statistics </a> was able to parse out users who self identified in their profile and found 78% of members who joined in 2010 identified as female and 22% as male. The sample size was small compared to the total number of fan fiction users, but it does seem to indicate that most members are female. As such, do we expect that fan fiction focuses more on female characters than canon does?
+</p>
+<p>
+  Toggling the graph between canon and fan fiction like in the last graph, this does seem to be the case. When we are in the fan fiction state, there are noticeably more gold bars than there are red bars and we see them disappear if we toggle back to canon. Indeed, we go from 14 to 22 female characters in the top 50! And of the 14 that were in the top 50 for canon, 10 moved up in ranking when going to fan fiction. Perhaps this is just an example of writing what we know- women would therefore write female characters more. But maybe it also has something to do with giving a voice to communities typically underrepresented in mainstream works.
 </p>
 <hr>
 <h2 class='lead text-center'>Character Co-Occurrency Matrix</h2>
