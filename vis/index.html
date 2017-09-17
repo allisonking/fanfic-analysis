@@ -40,7 +40,10 @@
     Overall, I collected the metadata of 560,000 pieces of fan fiction. It took my scraper two full days to collect all of this data. Below are some visualizations I put together. They're all more or less interactive, so take your time walking through the graphs- I hope you enjoy!
   </p>
   <hr>
-  <h2 class='lead text-center'>Fan Fiction Publications Over Time</h2>
+  <h2 class='lead text-center' id="1">
+    <a href="#1">1. </a>
+    Fan Fiction Publications Over Time
+  </h2>
 
   Why not show your house pride? <br>
   <form class="user-input">
@@ -75,7 +78,10 @@
   While most characters' spiked after the 7th book and movie, Sirius is a notable exception, spiking after book/movie five due to that thing that happens to him. One more interesting observation can be found when filtering for Snape. The spikes are all pretty expected except for the last one in January of 2016, long after the books and movies ended. It turns out this spike belongs to the day Alan Rickman, the actor behind Snape, passed away. We begin to see now a blurred line between fiction and reality- it is understandable that Sirius fan fiction spiked after Sirius the character died in the books, but for Snape fan fiction to rise after the real life actor passed away is something different. Perhaps it shows the power Alan Rickman's acting, to thoroughly blur the lines between himself and the character he played- or maybe it shows the potential healing behind fan fiction- the ability to turn to a fandom that is also grieving and turn that grief into art.
 </p>
 <hr>
-<h2 class='lead text-center'>Canon Popularity vs Fan Fiction Popularity</h2>
+<h2 class='lead text-center' id="2">
+  <a href="#2">2. </a>
+  Canon Popularity vs Fan Fiction Popularity
+</h2>
 <form class='user-input'>
   <input type='radio' name='frequency' value='canon' checked> Canon <br>
   <input type='radio' name='frequency' value='ff'> Fan Fiction <br><br>
@@ -100,7 +106,10 @@ CharacterFrequency({
   There are a lot of neat observations to be made here- I recommend toggling a few times and following the bars of characters of interest. One third of the characters who broke the top 50 in fan fiction are from the next generation- characters like Harry Potter's children who are only mentioned once or twice in the epilogue but who have an abundance of fan fiction written about them. Some of the complaints authors have with fan fiction is that it does not encourage creativity- the characters and the world were already created by someone else- but what about Scorpius Malfoy or Rose Weasley, who hardly have any character to build off of? Writers seem to be drawn to them as much as to the characters with established traits and personalities. Is this so different than aspiring musicians who perform covers of songs?
 </p>
 <hr>
-<h2 class='lead text-center'>Character Genders vs Fan Fiction Genders</h2>
+<h2 class='lead text-center' id="3">
+  <a href="#3">3. </a>
+  Character Genders vs Fan Fiction Genders
+</h2>
 <form class='user-input'>
   <input type='radio' name='gender' value='canon' checked> Canon <br>
   <input type='radio' name='gender' value='ff'> Fan Fiction <br><br>
@@ -120,7 +129,10 @@ CharacterFrequency({
   Toggling the graph between canon and fan fiction like in the last graph, this does seem to be the case. When we are in the fan fiction state, there are noticeably more gold bars than there are red bars and we see them disappear if we toggle back to canon. Indeed, we go from 14 to 22 female characters in the top 50! And of the 14 that were in the top 50 for canon, 10 moved up in ranking when going to fan fiction. Perhaps this is just an example of writing what we know- women would therefore write female characters more. But maybe it also has something to do with giving a voice to communities typically underrepresented in mainstream works.
 </p>
 <hr>
-<h2 class='lead text-center'>Character Co-Occurrency Matrix</h2>
+<h2 class='lead text-center' id="4">
+  <a href="#4">4. </a>
+  Character Co-Occurrency Matrix
+</h2>
 <div id='matrix-container' class='text-center'></div>
 
 <script src="js/matrix.js"></script>
@@ -131,5 +143,8 @@ Matrix({
   end_color : '#054169'
 })
 </script>
+<p>
+  
+</p>
 </body>
 </html>
