@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>After All This Time?</title>
+  <!-- D3 -->
+  <!--<script src="https://d3js.org/d3.v4.min.js"></script>-->
+  <script src="js/d3.min.js"></script>
+  <!-- jquery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+  <!-- Bootstrap -->
+  <link href="css/bootstrap_paper.min.css" rel="stylesheet">
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <!-- Fontawesome -->
+  <script src="https://use.fontawesome.com/5b01732ae2.js"></script>
+  <!-- D3 cloud -->
+  <script src="js/d3.layout.cloud.js"> </script>
+  <!-- Alea random number seed-->
+  <script src="//cdnjs.cloudflare.com/ajax/libs/seedrandom/2.4.3/lib/alea.min.js"> </script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" type='text/css' href="css/pub-time.css">
+  <link rel="stylesheet" type='text/css' href="css/main.css">
+
+  <!-- Custom D3 scripts -->
+  <script src="js/pub-time.js"></script>
+  <script src="js/character-frequencies.js"></script>
+  <script src="js/wordcloud.js"></script>
+  <script src="js/matrix.js"></script>
+  <script src='js/graph.js'></script>
+
+</head>
+
+<body>
+
+  <div class='text-center'>
+    <h1> After All This Time? </h1>
+    <h2 class='lead'>Visualizing Harry Potter Fan Fiction: 1999-2017 </h2>
+  </div>
+  <div>
+  <h2> Introduction and Motivation </h2>
+  <p>When I was a kid, like many other kids out there, I really loved <i>Harry Potter</i>. Big deal, you're probably thinking so did half the world! I don't think my story is unique- I grew up waving a chopstick around as my wand, yelling <i>Expecto Patronum</i> out the window at passing cars, dressing up with my friends as each of Voldemort's horcruxes for midnight movie screenings, and building Quidditch hoops out of PVC pipes and hula hoops in the basement. I can't quite explain the extent to which I loved the series without going into fan fiction though, which I both read and wrote.
+  </p>
+  <p>There's a definite stigma around fan fiction, having gained a reputation for being written by teenage girls and often having, let's call it, mature content. Then there are the authors who reject the idea of fan fiction, who do not allow their fans to write fiction using their characters and worlds. Even now I feel a bit hesitant to admit that I participated in the fan fiction community. But I'm going to argue that fan fiction is important, that there is something very magical about fan fiction, whether or not it's about a boy wizard, and I'm going to do this through graphs!
+  </p>
+</div>
+
+  <h2>Background</h2>
+  <p>
+    I started by building a web scraper to scrape a website I spent a lot of my childhood years on- FanFiction.net. FanFiction.net launched in October of 1998 and the first <i>Harry Potter</i> fan fiction was published on it in 1999 (or at least the first one that is still around now). As I built my parser on a weekend in July of 2017, testing it out on the first page of fan fictions, I was mildly annoyed because the data kept changing- just in the one or two days where I was building my parser, it seemed like fan fictions were being published every hour- ten years after the last book had been published!</p>
+  <p>
+    Overall, I collected the metadata of 560,000 pieces of fan fiction. It took my scraper two full days to collect all of this data. Below are some visualizations I put together. They're all more or less interactive, so take your time walking through the graphs- I hope you enjoy!
+  </p>
+  <hr>
+  <h2 class='lead text-center' id="1">
+    <a href="#1">1. </a>
+    Fan Fiction Publications Over Time
+  </h2>
+
+  Why not show your house pride? <br>
+  <div class="user-input">
+
+    <input type="radio" name="houses" value="Gryffindor" checked> Gryffindor<br>
+    <input type="radio" name="houses" value="Hufflepuff"> Hufflepuff <br>
+    <input type="radio" name="houses" value="Ravenclaw"> Ravenclaw <br>
+    <input type="radio" name="houses" value="Slytherin"> Slytherin <br> <br>
+
+    <input type="checkbox" id="yLocked"> Lock y axis <br>
+    <input type="checkbox" id="xLocked"> Lock x axis <br> <br>
+
+  </div>
+  <button id='reset' class='btn btn-primary pull-right'> Reset </button>
+  <p id="menu" class="pull-right"><br>Filter for: <select></select></p>
+  <div id="pub-time-chart"> </div>
+
+<script>PubTime({
+  container: '#pub-time-chart'
+});</script>
+<div class="panel-group">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" href="#pub-time-text"> Explanation and Analysis </a>
+      </h4>
+    </div>
+    <div id="pub-time-text" class="panel-collapse collapse">
+      <div class="panel-body">
+        <p>
+          This graph was meant to capture the number of fan fictions published on the site over time and to see how the spikes correspond to significant events in Harry Potter fandom history. This includes when each book was released, when each movie premiered, as well as small other tidbits- hover over the scars for information on these events.
+        </p>
+        <p>
+          Right away, you'll notice two large spikes. If you hover on the scars near those spikes, you'll see that they belong to the date the last book was released, as well as to the date the last movie was released. The other spikes typically correspond to other book/movie releases. But that's not always the case, and more than just fan fiction overall, I wanted to split this up by character to see when it was fans reacted to certain characters- when it was that they decided they cared for the characters so much that they would take their lives into their own hands.
+        </p>
+        <p>
+          The graph starts automatically filtered for Harry. In an ideal world, all of the characters would be in the drop down but it turned out the dataset was simply too large, causing lengthy load times, and so I chose certain characters I thought could be interesting. For instance, try going from Harry to Draco Malfoy. It's important to note that the Y-Axis scale changes automatically. You'll see that when moving to Malfoy, the spike near when Harry Potter and the Half Blood Prince was published goes up, indicating a surge of interest in Malfoy after the 6th book was published. Also interestingly, if you then shift to Neville, you'll see that fan fiction written about our favorite snake killer was sparse compared to that written about Harry, until the 7th book, but more so, the 7th movie. What happened there? I'll just leave <a href="http://attitude.co.uk/harry-potters-matthew-lewis-is-attitudes-new-cover-guy/">this article</a> here.
+        </p>
+        <p>
+          While most characters' spiked after the 7th book and movie, Sirius is a notable exception, spiking after book/movie five due to that thing that happens to him. One more interesting observation can be found when filtering for Snape. The spikes are all pretty expected except for the last one in January of 2016, long after the books and movies ended. It turns out this spike belongs to the day Alan Rickman, the actor behind Snape, passed away. We begin to see now a blurred line between fiction and reality- it is understandable that Sirius fan fiction spiked after Sirius the character died in the books, but for Snape fan fiction to rise after the real life actor passed away is something different. Perhaps it shows the power Alan Rickman's acting, to thoroughly blur the lines between himself and the character he played- or maybe it shows the potential healing behind fan fiction- the ability to turn to a fandom that is also grieving and turn that grief into art.
+        </p>
+      </div>
+    </div>
+  </div>
+<hr>
+<h2 class='lead text-center' id="2">
+  <a href="#2">2. </a>
+  Canon Popularity vs Fan Fiction Popularity
+</h2>
+<form class='user-input'>
+  <input type='radio' name='frequency' value='canon' checked> Canon <br>
+  <input type='radio' name='frequency' value='ff'> Fan Fiction <br><br>
+</form>
+<div id='frequency-chart' class='text-center'></div>
+<script>
+CharacterFrequency({
+  container: '#frequency-chart',
+  gender: false,
+  input: 'frequency'
+});
+</script>
+<div class="panel-group">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" href="#char-freq-text"> Explanation and Analysis </a>
+      </h4>
+    </div>
+    <div id="char-freq-text" class="panel-collapse collapse">
+      <div class="panel-body">
+        <p>
+          This graph is a bit simpler. I attempted to rank the 'popularity' of characters in canon vs fan fiction. For canon, that meant the number of times that character was mentioned in the series. I got that data from <a href="http://harrypotter.answers.wikia.com/wiki/Top_200_most_named_harry_potter_characters_s">here</a>. For fan fiction, each fan fiction can have a few characters tagged as the main characters and so I tallied those up. Then I normalized each value by dividing by percentage of total mentions or percentage of total tags to get the numbers you see above.
+        </p>
+        <p>
+          Toggle through the radio buttons to see how character popularity changes between canon and fan fiction. Harry stays the same, but everybody else either slides to the left, right, or completely goes away. Darker colors indicate that character was mentioned fewer times and lighter colors mean that character was mentioned more. For example, when toggling to 'Fan Fiction', you can see that James Potter's bar becomes almost pink, indicating he is a lot more popular in fan fiction than he is mentioned in canon. The yellow indicates a completely new character- one that wasn't in the top 50 previously but who broke it now- Lily Evans Potter, for example, as well as OC, or original character- a character that would only appear in fan fiction.
+        </p>
+        <p>
+          There are a lot of neat observations to be made here- I recommend toggling a few times and following the bars of characters of interest. One third of the characters who broke the top 50 in fan fiction are from the next generation- characters like Harry Potter's children who are only mentioned once or twice in the epilogue but who have an abundance of fan fiction written about them. Some of the complaints authors have with fan fiction is that it does not encourage creativity- the characters and the world were already created by someone else- but what about Scorpius Malfoy or Rose Weasley, who hardly have any character to build off of? Writers seem to be drawn to them as much as to the characters with established traits and personalities. Is this so different than aspiring musicians who perform covers of songs?
+        </p>
+      </div>
+    </div>
+  </div>
+<hr>
+<h2 class='lead text-center' id="3">
+  <a href="#3">3. </a>
+  Character Genders vs Fan Fiction Genders
+</h2>
+<form class='user-input'>
+  <input type='radio' name='gender' value='canon' checked> Canon <br>
+  <input type='radio' name='gender' value='ff'> Fan Fiction <br><br>
+</form>
+<div id='gender-chart' class='text-center'></div>
+<script>
+CharacterFrequency({
+  container: '#gender-chart',
+  gender: true,
+  input: 'gender'
+});
+</script>
+<div class="panel-group">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" href="#char-gender-text"> Explanation and Analysis </a>
+      </h4>
+    </div>
+    <div id="char-gender-text" class="panel-collapse collapse">
+      <div class="panel-body">
+        <p>
+          It's pretty hard to talk about fan fiction without talking about gender. Neither the gender nor age of fan fiction writers are normally disclosed. However, <a href="http://ffnresearch.blogspot.com/2011/03/fan-fiction-demographics-in-2010-age.html">Fan Fiction Statistics </a> was able to parse out users who self identified in their profile and found 78% of members who joined in 2010 identified as female and 22% as male. The sample size was small compared to the total number of fan fiction users, but it does seem to indicate that most members are female. As such, do we expect that fan fiction focuses more on female characters than canon does?
+        </p>
+        <p>
+          Toggling the graph between canon and fan fiction like in the last graph, this does seem to be the case. When we are in the fan fiction state, there are noticeably more gold bars than there are red bars and we see them disappear if we toggle back to canon. Indeed, we go from 14 to 22 female characters in the top 50! And of the 14 that were in the top 50 for canon, 10 moved up in ranking when going to fan fiction. Perhaps this is just an example of writing what we know- women would therefore write female characters more. But maybe it also has something to do with giving a voice to communities typically underrepresented in mainstream works.
+        </p>
+      </div>
+    </div>
+  </div>
+<hr>
+<h2 class='lead text-center' id="4">
+  <a href="#4">4. </a>
+  Word Cloud of Titles- A Canon Relationship
+</h2>
+<h4 class= 'text-center'> Ron Weasley and Hermione Granger</h4>
+<div id='romione-container'> </div>
+<script>
+WordCloud({
+  container: '#romione-container',
+  data: 'data/d3/romione.json'
+});
+</script>
+
+<hr>
+<h2 class='lead text-center' id="4">
+  <a href="#5">5. </a>
+  Word Cloud of Titles- A Fan Favorite Relationship
+</h2>
+<h4 class= 'text-center'> Sirius Black and Remus Lupin </h4>
+<div id='wolfstar-container'> </div>
+<script>
+WordCloud({
+  container: '#wolfstar-container',
+  data: 'data/d3/wolfstar.json'
+});
+</script>
+<div class="panel-group">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" href="#word-cloud-text"> Explanation and Analysis </a>
+      </h4>
+    </div>
+    <div id="word-cloud-text" class="panel-collapse collapse">
+      <div class="panel-body">
+        <p>
+          Charts 4 and 5 are word clouds of the 100 most commonly used words in fan fiction titles given a relationship. Chart 4 focuses on titles of fan fiction specifically tagged as being about Ron and Hermione (though not necessarily exclusively). Chart 5 focuses on titles of fan fiction tagged as being about Sirius and Lupin. I wanted to show both the word clouds of a canon, heteronormative relationship (Romione) as well as that of a non-canon, slash relationship (Wolfstar). After all, if we see the rise of female representation in fan fiction as compared to the canon, does it follow that we would also see the rise of other underrepresented communities, such as the LGBTQ community? Slash fiction can be traced back as being part of fan fiction since the very first fanzines about Kirk/Spock- Lev Grossman has a <a href="http://content.time.com/time/arts/article/0,8599,2081784,00.html">great article</a> in Time Magazine that goes through this- yet I wanted to see if I could show more than just that there is a large number of slash fiction, but also to see how the content might differ from fiction that follows canon's straight relationship.
+        </p>
+        <p>
+          If you compare the charts between Romione and Wolfstar, you'll see that they look very similar. There are large words for each of the character names, as well as for their friends ('Harry' and 'Potter' for Romione, and 'Marauders' for Wolfstar), and for 'Christmas' (ABC might have something to do with that). There are differences, of course- Wolfstar fan fiction seems to often have 'Chocolate' and 'Moon', a reference to Lupin having offered Harry chocolate once and to his being a werewolf, but the largest word in both pictures is 'Love'. After all, love is love, whether you are the brightest witch of your age or were sent to prison for thirteen years and can turn into a dog.
+        </p>
+        <p>
+          For fun, try hovering over a word to see three randomly chosen titles that have that word in them!
+        </p>
+      </div>
+    </div>
+  </div>
+
+<hr>
+<h2 class='lead text-center' id="4">
+  <a href="#6">6. </a>
+  Character Co-Occurrency Matrix
+</h2>
+<div id='matrix-container' class='text-center'></div>
+
+<script>
+Matrix({
+  container: '#matrix-container',
+  start_color : 'white',
+  end_color : '#054169'
+})
+</script>
+<div class="panel-group">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" href="#matrix-text"> Explanation and Analysis </a>
+      </h4>
+    </div>
+    <div id="matrix-text" class="panel-collapse collapse">
+      <div class="panel-body">
+        <p>
+          Here is a co-occurrency matrix for the top fifty most popular characters in Harry Potter fan fiction. Where two characters intersect is a percentage of how many times the row character is tagged in fan fiction along with the column character out of the total number of fan fictions the row character is in. In other words, if I look at the Draco Malfoy row, I can go across to Harry's column and see that Harry is featured in 31.44% of Draco Malfoy fan fiction. Conversely, I can go to Harry's row and find Draco's column and see that Draco is in 22.88% of fan fiction that also feature Harry. In this way, we can get a sense of how the fandom agrees on relationships.
+        </p>
+        <p>
+          For example, if we look at Remus Lupin's row, we see he has a 16.23% with Tonks. Tonks, on the other hand, has a 70.57% with Lupin, meaning while people are more than willing to ship Tonks with Lupin, shipping Lupin with Tonks seems much less prevelant, as if there were another character vying for his attention. This character is of course Sirius Black, who, whether we look at his row or Lupin's row, has around a 40% correlation.
+        </p>
+        <p>
+          The matrix is limited in what it can show us. Although darker tiles seem to indicate deeper relationships, a closer examination show that the darker tiles tend to belong to more minor characters who were not developed in the canon as much and so are mostly attached to one character (e.g. Astoria Greengrass to Draco Malfoy, James and Lily, Rose Weasley and Scorpius Malfoy, if we include <i>Cursed Child</i>). Interestingly, this seems to also apply to Ron to Hermione, though both are considered very main characters. We saw Ron's popularity fall from Chart <a href="#2">2</a> as well- perhaps the fandom sees him as a relatively peripheral character?
+        </p>
+      </div>
+    </div>
+  </div>
+
+<hr>
+<h2 class='lead text-center' id="4">
+  <a href="#7">7. </a>
+  Character Relationship Graph
+</h2>
+<svg width="960" height="600" id="graph-container"></svg>
+
+<script>
+Graph({
+  container: '#graph-container',
+})
+</script>
+<div class="panel-group">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" href="#graph-text"> Explanation and Analysis </a>
+      </h4>
+    </div>
+    <div id="graph-text" class="panel-collapse collapse">
+      <div class="panel-body">
+        <p>
+          This seventh and last graph uses the same correlation data from the matrix, but arranges it in a different way and is limited to the top 15 characters and their 5 closest relationships. Hovering over a node will reveal the character's name as well as all of its connections, while hovering over a link will show which nodes are connected and also the number of fan fictions written that feature both characters. Colors show which house each character belonged to, or is grey if the characters either did not attend Hogwarts (Grindelwald) or whose houses are unknown (next generation and Original Character). Harry is naturally the most interconnected character. We can also see that some cliques have formed- we have the Marauder era relationships in the upper left and the next generation relationships in the lower right.
+        </p>
+        <p>
+          The reason I chose to end with this graph is the grey circle near the middle- after Harry and Hermione, the male and female leads of the Harry Potter series, Original Character is the most interconnected character. Fans have created their own characters to intermingle with seemingly every corner of the fandom, from the Marauder era, to next generation, to Tom Riddle Jr. By writing an original character, an author has engaged in an exercise of empathy- in the case of self insert fiction, they have wondered how they would handle situations in the Harry Potter universe, and in the case of a character separate from the author, they have wondered how this type of person would fit in. It is through original characters, as well as through breathing life into minor characters in the canon, that a reader can have a conversation with the author.
+        </p>
+
+      </div>
+    </div>
+  </div>
+
+<h2>Conclusion</h2>
+<p>
+    What happens when an author publishes a story? The story goes out to readers who are often changed by these stories. They might reach out to the author and let them know, but other than that, the effects of a story are often lost. In Harry Potter, we grew up with a story that taught us themes of tolerance and love that followed JK Rowling's beliefs. Unique to writing novels is the individualism of it- you don't see blockbuster movies created by a single person and it's not often that you see a song written, composed by, and sung all by the same artist. </p>
+    <p>While JK Rowling was able to share some themes, there was no space for discussion about how these topics were presented, whether with fans or with co-creators. So while Harry Potter has some strong female characters, some people of color, and one revealed after the fact gay character, JK Rowling is ultimately only one person with experiences based on that of a straight, white, woman. In the spirit of seeing an already loved story become better and more representative, fans insert their own experiences and in that way, perhaps we achieve a story better than the original, or at least one more representative of humanity. And that, to me, is pretty magical.
+</p>
+<p>Thanks for sticking with me to the end! This project was done purely for fun and out of love and respect for the <i>Harry Potter</i> series as well as for the magic of storytelling. For the code to render the graphs as well as some of the data, see <a href="https://github.com/allisonking/fanfic-analysis"> my GitHub repository.</a> For the full data set, due to the size of it, you'll have to contact me directly at <i>allison julia king [at] gmail [dot] com</i> (no spaces). For suggestions, questions, or conversations, feel free to send an email! Until then, and hopefully this hasn't become an overused way to end anything Harry Potter related... mischief managed!
+</p>
+</body>
+</html>
