@@ -11,4 +11,6 @@ body {
 p {
   margin-left: 10%;
   margin-right: 10%;
+  color: rgb(82, 82, 85);
+  font-size: 20px;
 }

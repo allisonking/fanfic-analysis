@@ -2,7 +2,11 @@
   cursor: default;
 }
 
-#story-titles {
+#romione-container {
+  cursor: default;
+}
+
+#wolfstar-container {
   cursor: default;
 }
 
@@ -54,4 +58,8 @@ svg text{
 
 .point {
   clip-path: url(#clip);
+}
+
+.link {
+  fill: none;
 }

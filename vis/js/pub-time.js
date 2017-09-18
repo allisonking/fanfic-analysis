@@ -30,7 +30,8 @@ function PubTime(options) {
   var yScale = d3.scaleLinear().range([h, 0]);
   var init_xScale;
   var init_yScale;
-  var zoom = d3.zoom().on("zoom", zoomed);
+  var zoom = d3.zoom().on("zoom", zoomed)
+               .scaleExtent([1/2, 2]);
 
   svg.append('rect')
      .attr('class', 'zoom')
@@ -60,6 +61,20 @@ function PubTime(options) {
       yLocked = true;
     } else { yLocked = false;}
   }
+
+  d3.select('#reset').on('click', function() {
+    xScale.domain(init_xScale.domain());
+    yScale.domain(init_yScale.domain());
+    focus.select('.axis--y').call(yAxis.scale(init_yScale));
+    focus.select('.axis--x').call(xAxis.scale(init_xScale))
+                            .selectAll('text') // formatting for x axis labels to be slanted
+                            .style('text-anchor', 'end')
+                            .attr('dx', '-.8em')
+                            .attr('dy', '.15em')
+                            .attr('transform', 'rotate(-65)');
+    update();
+
+  })
 
   /**
    * Handles when the user changes a character from the menu. Called by menu change.
