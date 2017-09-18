@@ -49,8 +49,8 @@ function PubTime(options) {
   // handle locking axes for more custom zooming
   d3.select('#xLocked').on('change', xLockeded);
   d3.select('#yLocked').on('change', yLockeded);
-  var xLocked = false;
-  var yLocked = false;
+  xLockeded();
+  yLockeded();
   function xLockeded(){
     if (d3.select('#xLocked').property('checked')) {
       xLocked = true;
