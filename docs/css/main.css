@@ -1,0 +1,16 @@
+body {
+  font-family: Helvetica, sans-serif;
+  font-size: 18px;
+  margin-left: 10%;
+  margin-right: 10%;
+  margin-top: 5%;
+  margin-bottom: 5%;
+  padding: 0;
+}
+
+p {
+  margin-left: 10%;
+  margin-right: 10%;
+  color: rgb(82, 82, 85);
+  font-size: 20px;
+}
