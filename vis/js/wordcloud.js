@@ -16,6 +16,7 @@ function WordCloud(options) {
 
   var colorMap = ['red', '#a38b07'];
 
+  // seeded random number generator
   var arng = new alea('hello.');
 
   var data;
@@ -36,6 +37,8 @@ function WordCloud(options) {
                .font("Impact")
                .random(arng)
                .on("end", function(output) {
+                 // sometimes the word cloud can't fit all the words- then redraw
+                 // https://github.com/jasondavies/d3-cloud/issues/36
                  if (word_entries.length !== output.length) {
                    console.log("not all words included- recreating");
                    makeCloud();
@@ -69,13 +72,6 @@ function WordCloud(options) {
     var group = focus.append('g')
                      .attr('id', 'story-titles');
      var base = d.y - d.size;
-    //                  group.append('line')
-    //                       .attr('x1', -w/2)
-    //                       .attr('x2', w/2)
-    //                       .attr('y1', base)
-    //                       .attr('y2', base)
-    //                       .style('stroke-width', 1)
-    //                       .style('stroke', 'black');
 
     group.selectAll('text')
          .data(data['sample_title'][d.key])
@@ -90,7 +86,7 @@ function WordCloud(options) {
     var bbox = group.node().getBBox();
     var bboxPadding = 5;
 
-    // place the background
+    // place a white background to see text more clearly
     var rect = group.insert('rect', ':first-child')
                   .attr('x', bbox.x)
                   .attr('y', bbox.y)
