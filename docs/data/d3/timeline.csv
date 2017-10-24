@@ -12,7 +12,7 @@ event,date,type,link
 "Harry Potter and the Sorcerer's Stone movie released",2001-11-16,movie
 "Richard Harris, Dumbledore actor, passes away",2002-10-25,other
 "Harry Potter and the Chamber of Secrets movie released",2002-11-15,movie
-"Harry Potter and the Order of the Phoenix published",2003-06-21,movie
+"Harry Potter and the Order of the Phoenix published",2003-06-21,book
 "Harry Potter and the Prisoner of Azkaban movie released",2004-05-31,movie
 "Harry Potter and the Half Blood Prince published",2005-07-16,book
 "Harry Potter and the Goblet of Fire movie released",2005-09-18,movie
@@ -30,7 +30,7 @@ event,date,type,link
 "Harry Potter and the Deathly Hallows Part 1 movie released",2010-11-19,movie
 "Harry Potter and the Deathly Hallows Part 2 movie released",2011-07-11,movie
 "Pottermore officially launched",2012-04-14,other
-"JK Rowling says Ron and Hermione should not have ended up together",2014-02-02,other
+"JK Rowling admits to having second thoughts on Ron/Hermione",2014-02-02,other
 "Wizarding World Diagon Alley opened to the public",2014-07-08,other
 "Alan Rickman, Snape's actor, passes away",2016-01-14,other
 "Harry Potter and the Cursed Child play premiers",2016-07-30,other
